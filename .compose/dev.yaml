@@ -1,0 +1,36 @@
+# SPDX-FileCopyrightText: 2026 Damián Búho <damian.buho@proton.me>
+#
+# SPDX-License-Identifier: MIT
+
+---
+name: ${M6E_COMPOSE_PROJECT_NAME}
+services:
+  o9s-doomsday-clock-exporter:
+    container_name: ${M6E_CONTAINER_INSTANCE}
+    image: ${M6E_IMAGE_FULLNAME}
+    # Preset: xlarge (4.0c, 8g) — interactive dev shell. Bounded so it can't starve the shared host.
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 8g
+    labels:
+      com.docker.compose.watch: "true"
+    networks:
+      - dev-network
+      - traefik-network
+    environment:
+      - LANG
+      - TZ
+      - B19_VERBOSITY=debug
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    tmpfs:
+      - /tmp:size=64m
+networks:
+  dev-network:
+    name: ${M6E_NETWORK}
+    external: true
+  traefik-network:
+    name: traefik-network
+    external: true

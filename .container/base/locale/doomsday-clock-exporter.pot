@@ -1,0 +1,44 @@
+# SPDX-FileCopyrightText: 2026 Damián Búho <damian.buho@proton.me>
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+#
+# SPDX-License-Identifier: MIT
+msgid ""
+msgstr ""
+"Project-Id-Version: doomsday-clock-exporter development\n"
+"Report-Msgid-Bugs-To: i18n@b19.dev\n"
+"POT-Creation-Date: 2026-05-02 16:12-0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: .container/compile-go/build.d/compile-go/post/500-build-doomsday-clock-exporter.sh:3
+msgid "Download modules"
+msgstr ""
+
+#: .container/compile-go/build.d/compile-go/post/500-build-doomsday-clock-exporter.sh:6
+msgid "Build"
+msgstr ""
+
+#: .container/compile-go/build.d/compile-go/post/500-build-doomsday-clock-exporter.sh:11
+msgid "Make directory in export"
+msgstr ""
+
+#: .container/compile-go/build.d/compile-go/post/500-build-doomsday-clock-exporter.sh:14
+msgid "Copy %s to %s"
+msgstr ""
+
+#: .container/user/healthcheck.d/100-check-service.sh:7
+msgid "Health check failed on port %s"
+msgstr ""
+
+#: .container/user/healthcheck.d/100-check-service.sh:11
+msgid "Service is responsive on port %s"
+msgstr ""
+
+#: .container/user/entrypoint.d/3000-start.sh:4
+msgid "Starting"
+msgstr ""
