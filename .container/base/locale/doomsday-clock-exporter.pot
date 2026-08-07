@@ -4,41 +4,42 @@
 # SPDX-License-Identifier: MIT
 msgid ""
 msgstr ""
-"Project-Id-Version: doomsday-clock-exporter development\n"
-"Report-Msgid-Bugs-To: i18n@b19.dev\n"
-"POT-Creation-Date: 2026-05-02 16:12-0300\n"
+"Project-Id-Version: doomsday-clock-exporter 1.0.0-3-ga37da3b\n"
+"Report-Msgid-Bugs-To: https://codeberg.org/o9s/doomsday-clock-exporter/"
+"issues\n"
+"POT-Creation-Date: 2026-08-07 22:09+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: .container/compile-go/build.d/compile-go/post/500-build-doomsday-clock-exporter.sh:3
+#: .container/compile-go/build.d/compile-go/post/500-build-doomsday-clock-exporter.sh:7
 msgid "Download modules"
 msgstr ""
 
-#: .container/compile-go/build.d/compile-go/post/500-build-doomsday-clock-exporter.sh:6
+#: .container/compile-go/build.d/compile-go/post/500-build-doomsday-clock-exporter.sh:10
 msgid "Build"
 msgstr ""
 
-#: .container/compile-go/build.d/compile-go/post/500-build-doomsday-clock-exporter.sh:11
+#: .container/compile-go/build.d/compile-go/post/500-build-doomsday-clock-exporter.sh:15
 msgid "Make directory in export"
 msgstr ""
 
-#: .container/compile-go/build.d/compile-go/post/500-build-doomsday-clock-exporter.sh:14
+#: .container/compile-go/build.d/compile-go/post/500-build-doomsday-clock-exporter.sh:18
 msgid "Copy %s to %s"
 msgstr ""
 
-#: .container/user/healthcheck.d/100-check-service.sh:7
+#: .container/user/entrypoint.d/5000-start.sh:8
+msgid "Starting"
+msgstr ""
+
+#: .container/user/healthcheck.d/100-check-service.sh:12
 msgid "Health check failed on port %s"
 msgstr ""
 
-#: .container/user/healthcheck.d/100-check-service.sh:11
+#: .container/user/healthcheck.d/100-check-service.sh:16
 msgid "Service is responsive on port %s"
-msgstr ""
-
-#: .container/user/entrypoint.d/3000-start.sh:4
-msgid "Starting"
 msgstr ""
