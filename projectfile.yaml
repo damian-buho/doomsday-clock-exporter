@@ -6,8 +6,9 @@ $schema: https://projectfile.org/schema/v1.json
 identity:
   created: "2026-05-28"
   name: doomsday-clock-exporter
-  summary: Prometheus exporter for Doomsday Clock value
+  summary: Prometheus exporter for the Doomsday Clock value
   title: Doomsday Clock Exporter
+  description: Prometheus exporter that scrapes the Bulletin of the Atomic Scientists Doomsday Clock value and exposes it as a gauge of seconds to midnight. A background scraper caches the value with a configurable TTL, serves stale values with a degradation gauge on upstream failure, and retries with exponential backoff.
 includes:
   - .makefile/b19/ci.yaml
   - .makefile/b19/images/go.yaml
@@ -17,19 +18,47 @@ includes:
   - https://kiota.ch/o9s/metadata/raw/branch/main/include.yaml
 kind: SoftwareSourceCode
 links:
-  - label: Doomsday Clock Exporter on Codeberg
+  - label:
+      en: Doomsday Clock Exporter on Codeberg
+      es: Doomsday Clock Exporter en Codeberg
+      uk: Doomsday Clock Exporter на Codeberg
+    tags:
+      - public
+      - badges
+      - badges-gitea
     type: source-code
     url: https://codeberg.org/o9s/doomsday-clock-exporter
-  - label: Doomsday Clock Exporter on GitHub
+  - label:
+      en: Doomsday Clock Exporter on GitHub
+      es: Doomsday Clock Exporter en GitHub
+      uk: Doomsday Clock Exporter на GitHub
+    tags:
+      - public
+      - badges
+      - badges-github
     type: source-code
     url: https://github.com/damian-buho/o9s-doomsday-clock-exporter
-  - label: Doomsday Clock Exporter on kiota.ch
+  - label:
+      en: Doomsday Clock Exporter on kiota.ch
+      es: Doomsday Clock Exporter en kiota.ch
+      uk: Doomsday Clock Exporter на kiota.ch
+    preferred: true
     type: source-code
     url: https://kiota.ch/o9s/doomsday-clock-exporter
-  - label: Issues on Codeberg
+  - label:
+      en: Issues on Codeberg
+      es: Incidencias en Codeberg
+      uk: Issues на Codeberg
+    tags:
+      - support
     type: bugs
     url: https://codeberg.org/o9s/doomsday-clock-exporter/issues
-  - label: Issues on GitHub
+  - label:
+      en: Issues on GitHub
+      es: Incidencias en GitHub
+      uk: Issues на GitHub
+    tags:
+      - support
     type: bugs
     url: https://github.com/damian-buho/o9s-doomsday-clock-exporter/issues
 org:
@@ -112,6 +141,19 @@ repositories:
   - role: mirror
     type: git
     url: git@github.com:damian-buho/o9s-doomsday-clock-exporter.git
-  - role: origin
+  - branch: main
+    role: origin
     type: git
     url: ssh://git@kiota.ch/o9s/doomsday-clock-exporter.git
+keywords:
+  - doomsday-clock
+  - prometheus
+  - exporter
+  - monitoring
+  - go
+  - docker
+technologies:
+  - go
+license:
+  covers: project
+  spdx: "MIT"
