@@ -10,7 +10,7 @@ cff-version: 1.2.0
 message: Please cite this software using the metadata from this file.
 type: software
 title: Doomsday Clock Exporter
-abstract: Prometheus exporter for Doomsday Clock value
+abstract: Prometheus exporter for the Doomsday Clock value
 authors:
   - family-names: Búho
     given-names: Damián
@@ -25,3 +25,10 @@ contact:
     website: https://dbuho.me
 license: MIT
 repository-code: https://kiota.ch/o9s/doomsday-clock-exporter
+keywords:
+  - doomsday-clock
+  - prometheus
+  - exporter
+  - monitoring
+  - go
+  - docker
