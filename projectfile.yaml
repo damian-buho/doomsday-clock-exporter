@@ -6,9 +6,15 @@ $schema: https://projectfile.org/schema/v1.json
 identity:
   created: "2026-05-28"
   name: doomsday-clock-exporter
-  summary: Prometheus exporter for the Doomsday Clock value
+  summary:
+    en: Prometheus exporter for the Doomsday Clock value
+    es: Exportador de Prometheus para el valor del Reloj del Juicio Final
+    uk: Експортер Prometheus для значення Годинника Судного дня
   title: Doomsday Clock Exporter
-  description: Prometheus exporter that scrapes the Bulletin of the Atomic Scientists Doomsday Clock value and exposes it as a gauge of seconds to midnight. A background scraper caches the value with a configurable TTL, serves stale values with a degradation gauge on upstream failure, and retries with exponential backoff.
+  description:
+    en: Prometheus exporter that scrapes the Bulletin of the Atomic Scientists Doomsday Clock value and exposes it as a gauge of seconds to midnight. A background scraper caches the value with a configurable TTL, serves stale values with a degradation gauge on upstream failure, and retries with exponential backoff.
+    es: Exportador de Prometheus que extrae el valor del Reloj del Juicio Final del Bulletin of the Atomic Scientists y lo expone como un indicador de segundos hasta la medianoche. Un raspador en segundo plano almacena el valor en caché con un TTL configurable, sirve valores obsoletos con un indicador de degradación ante fallos del origen, y reintenta con retroceso exponencial.
+    uk: Експортер Prometheus, який збирає значення Годинника Судного дня від Bulletin of the Atomic Scientists і надає його як gauge секунд до опівночі. Фоновий збирач кешує значення з налаштовуваним TTL, віддає застарілі значення з gauge деградації при відмові джерела та повторює спроби з експоненційним відкатом.
 includes:
   - .makefile/b19/ci.yaml
   - .makefile/b19/images/go.yaml
