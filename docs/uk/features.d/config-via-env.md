@@ -4,6 +4,8 @@ SPDX-FileCopyrightText: 2026 Damián Búho <damian.buho@proton.me>
 SPDX-License-Identifier: MIT
 -->
 
+<!-- textlint-disable terminology,common-misspellings -->
+
 # Налаштування змінними середовища
 
 - Порт прослуховування HTTP: `O9S_DOOMSDAY_CLOCK_EXPORTER_HTTP_PORT` (типово `8080`).
@@ -11,3 +13,5 @@ SPDX-License-Identifier: MIT
 - Таймаут звернення до upstream: `O9S_DOOMSDAY_CLOCK_EXPORTER_FETCH_TIMEOUT` (типово `30` секунд).
 - Інтервал збору: `O9S_DOOMSDAY_CLOCK_EXPORTER_SCRAPE_INTERVAL` (типово `3600` секунд).
 - TTL кешу: `O9S_DOOMSDAY_CLOCK_EXPORTER_CACHE_TTL` (типово `86400` секунд).
+
+<!-- textlint-enable -->
