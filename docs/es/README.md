@@ -24,33 +24,36 @@ Exportador de Prometheus para el valor del Reloj del Juicio Final
 - Configuración mediante variables de entorno
 - Comprobación de estado específica del servicio
 - Métricas de autoobservabilidad
-- Persistent APT cache across builds
-- Service process management with log routing (b19-exec)
-- Cached artifact downloads with integrity verification (b19-fetch)
-- Timed command execution with failure reporting (b19-run)
-- Run-once initialization (bootstrap.d)
-- Modular build hooks (build.d)
-- Automatic CPU count detection (NUMPROCS)
-- Declarative dependency management (b19-deps)
-- Pluggable startup system (entrypoint.d)
-- Feature toggles for all subsystems
-- Built-in health monitoring (healthcheck.d)
-- Multilingual shell output (b19-i18n)
-- Image lineage tracking
-- Structured, level-filtered logging (b19-log)
-- Non-root container by default
-- Air-gapped / offline build and runtime support
-- Runtime overlay injection
-- Reproducible base image (pinned by digest)
-- Port validation
-- Unified lifecycle runner family
-- Docker secrets auto-loading (secrets)
-- Interactive shell hooks (shell.d)
-- Graceful signal handling
-- Jinja2 configuration templates (minijinja-cli)
-- Built-in test framework (test.d)
-- Pre-installed utility tools
-- XDG Base Directory paths
+
+### Heredado de B19/Ubuntu 1.4.0
+
+- Caché APT persistente entre compilaciones
+- Gestión de procesos de servicio con enrutado de logs (b19-exec)
+- Descargas de artefactos con caché y verificación de integridad (b19-fetch)
+- Ejecución de comandos temporizada con informe de fallos (b19-run)
+- Inicialización de una sola vez (bootstrap.d)
+- Hooks de compilación modulares (build.d)
+- Detección automática del número de CPUs (NUMPROCS)
+- Gestión declarativa de dependencias (b19-deps)
+- Sistema de arranque conectable (entrypoint.d)
+- Conmutadores de funcionalidades para todos los subsistemas
+- Monitorización de estado integrada (healthcheck.d)
+- Salida de shell multilingüe (b19-i18n)
+- Seguimiento del linaje de la imagen
+- Logging estructurado con filtro por nivel (b19-log)
+- Contenedor sin privilegios de root por defecto
+- Soporte de compilación y runtime aislados de internet (air-gapped/offline)
+- Inyección de overlays en runtime
+- Imagen base reproducible (fijada por digest)
+- Validación de puertos
+- Familia unificada de runners del ciclo de vida
+- Autocarga de secretos de Docker (secrets)
+- Hooks de shell interactivo (shell.d)
+- Gestión elegante de señales
+- Plantillas de configuración Jinja2 (minijinja-cli)
+- Framework de tests integrado (test.d)
+- Herramientas de utilidad preinstaladas
+- Rutas XDG Base Directory
 
 Consulta [FEATURES.md](FEATURES.md) para ver la lista completa.
 
@@ -64,12 +67,23 @@ Consulta [FEATURES.md](FEATURES.md) para ver la lista completa.
 
 Descarga la imagen de contenedor publicada:
 
+### Descargar de GHCR
+
 ```sh
 docker pull ghcr.io/damian-buho/o9s/doomsday-clock-exporter:latest
+```
+
+### Descargar de DockerHub
+
+```sh
 docker pull docker.io/damianbuho/o9s-doomsday-clock-exporter:latest
 ```
 
+Las versiones estables también publican las etiquetas `X.Y.Z`, `X.Y` y `X`: descarga el nivel de precisión que quieras fijar.
+
 Si los registros anteriores no están disponibles, descarga desde el origen:
+
+### Descargar de Kiota
 
 ```sh
 docker pull kiota.ch/o9s/doomsday-clock-exporter:latest
@@ -87,7 +101,9 @@ make dc-down
 
 ## Compilación
 
-- [Referencia del Makefile](../MAKEFILE.md)
+Ejecuta `make` sin argumentos para el destino predeterminado; ejecuta `make help` para listar todos los destinos.
+
+Para el bucle de desarrollo local, `make dev-container` levanta el dev-container.
 
 Puntos de entrada de la canalización:
 
@@ -96,35 +112,20 @@ Puntos de entrada de la canalización:
 - `make check-outdated` — Report every pinned dependency that lags upstream
 - `make ready-to-publish` — Run the pseudo-CI pipeline locally — build, test and scan, without publishing
 
-Ejecuta `make` sin argumentos para el destino predeterminado; ejecuta `make help` para listar todos los destinos.
-
-Para el bucle de desarrollo local, `make dev-container` levanta el dev-container.
-
 ## Políticas
 
 - [Cómo contribuir](CONTRIBUTING.md)
 - [Política de seguridad](SECURITY.md)
 - [Cómo obtener ayuda](SUPPORT.md)
 - [Código de conducta](CODE_OF_CONDUCT.md)
+- [Política sobre IA y LLM](AI_POLICY.md)
 
 ## Enlaces
 
-### Proyecto
-
 - [Especificación de Projectfile](https://projectfile.org)
-- [Doomsday Clock Exporter en Codeberg](https://codeberg.org/o9s/doomsday-clock-exporter)
-- [Doomsday Clock Exporter en GitHub](https://github.com/damian-buho/o9s-doomsday-clock-exporter)
-- [Doomsday Clock Exporter en kiota.ch](https://kiota.ch/o9s/doomsday-clock-exporter)
-- [Incidencias en Codeberg](https://codeberg.org/o9s/doomsday-clock-exporter/issues)
-- [Incidencias en GitHub](https://github.com/damian-buho/o9s-doomsday-clock-exporter/issues)
-
-### Otros
-
-- [Del autor](https://dbuho.me)
 
 ## Licencia
 
 Este proyecto se publica bajo la licencia MIT — consulta el archivo [LICENSE](LICENSE) para más detalles.
 
-*Generado desde projectfile ([saber cómo](https://projectfile.org/how-to/readme))*
 <!-- textlint-enable -->

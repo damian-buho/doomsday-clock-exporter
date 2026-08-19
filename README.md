@@ -1,16 +1,18 @@
 <!--
 SPDX-FileCopyrightText: 2026 Damián Búho <damian.buho@proton.me>
 SPDX-License-Identifier: MIT
+pf-cli-managed: yes
 -->
 
-<!-- pf-cli-managed: yes -->
+[Español](docs/es/README.md) · [Українська](docs/uk/README.md)
+
 # Doomsday Clock Exporter
 
-Prometheus exporter for Doomsday Clock value
+Prometheus exporter for the Doomsday Clock value
 
-[![License](https://img.shields.io/badge/license-MIT-4c1?style=flat-square)](LICENSE) [![PRs welcome](https://img.shields.io/badge/PRs-welcome-4c1?style=flat-square)](CONTRIBUTING.md) [![REUSE compliance](https://api.reuse.software/badge/codeberg.org/o9s/doomsday-clock-exporter)](https://api.reuse.software/info/codeberg.org/o9s/doomsday-clock-exporter)
+[![Stand with Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://damian-buho.github.io/support-ukraine/) [![License](https://img.shields.io/static/v1?label=license&message=MIT&color=4c1&style=flat-square)](LICENSE) ![Commit style](https://img.shields.io/static/v1?label=commits&message=conventional&color=blue&style=flat-square) ![Workflow](https://img.shields.io/static/v1?label=workflow&message=git-flow&color=blue&style=flat-square) ![Versioning](https://img.shields.io/static/v1?label=versioning&message=semantic&color=blue&style=flat-square) [![PRs welcome](https://img.shields.io/static/v1?label=PRs&message=welcome&color=4c1&style=flat-square)](CONTRIBUTING.md) [![Citation](https://img.shields.io/static/v1?label=citation&message=cff&color=blue&style=flat-square)](CITATION.cff) [![REUSE compliance](https://api.reuse.software/badge/codeberg.org/o9s/doomsday-clock-exporter)](https://api.reuse.software/info/codeberg.org/o9s/doomsday-clock-exporter)
 
-![Project status](https://img.shields.io/badge/status-maintained-1d63ed?style=flat-square) [![Last commit](https://img.shields.io/gitea/last-commit/o9s/doomsday-clock-exporter?gitea_url=https://codeberg.org&style=flat-square)](https://codeberg.org/o9s/doomsday-clock-exporter)
+![Project status](https://img.shields.io/static/v1?label=status&message=maintained&color=1d63ed&style=flat-square) [![Last commit](https://img.shields.io/gitea/last-commit/o9s/doomsday-clock-exporter?gitea_url=https://codeberg.org&style=flat-square)](https://codeberg.org/o9s/doomsday-clock-exporter)
 
 [![Build status on kiota.ch](https://kiota.ch/o9s/doomsday-clock-exporter/badges/workflows/published.yaml/badge.svg)](https://kiota.ch/o9s/doomsday-clock-exporter/actions)
 
@@ -19,8 +21,10 @@ Prometheus exporter for Doomsday Clock value
 - Cached scraping with graceful degradation
 - Environment variable configuration
 - Service-specific healthcheck
-- In-house Go source build
 - Self-observability metrics
+
+### Inherited from B19/Ubuntu 1.4.0
+
 - Persistent APT cache across builds
 - Service process management with log routing (b19-exec)
 - Cached artifact downloads with integrity verification (b19-fetch)
@@ -49,31 +53,62 @@ Prometheus exporter for Doomsday Clock value
 - Pre-installed utility tools
 - XDG Base Directory paths
 
-See [Features](FEATURES.md) for the full list.
+See [FEATURES.md](FEATURES.md) for the full list.
 
 ## What this provides
 
 - **Executable** `dist/doomsday-clock-exporter`
-- **Container image** `kiota.ch/o9s/doomsday-clock-exporter:latest`
+- **Container image** `ghcr.io/damian-buho/o9s/doomsday-clock-exporter:latest`
+- **Container image** `docker.io/damianbuho/o9s-doomsday-clock-exporter:latest`
 
 ## Installation
 
 Pull the published container image:
 
+### Pull from GHCR
+
+```sh
+docker pull ghcr.io/damian-buho/o9s/doomsday-clock-exporter:latest
+```
+
+### Pull from DockerHub
+
+```sh
+docker pull docker.io/damianbuho/o9s-doomsday-clock-exporter:latest
+```
+
+Stable releases also publish `X.Y.Z`, `X.Y` and `X` tags — pull the precision you want to pin.
+
+If the registries above are unreachable, pull from the origin instead:
+
+### Pull from Kiota
+
 ```sh
 docker pull kiota.ch/o9s/doomsday-clock-exporter:latest
 ```
 
+## Usage
+
+Bring the stack up locally:
+
+```sh
+make dc-up
+make dc-logs
+make dc-down
+```
+
 ## Building
 
-- [Makefile reference](docs/MAKEFILE.md)
+Run `make` with no arguments for the default target; run `make help` to list every target.
+
+For the local dev loop, `make dev-container` brings up the dev-container.
 
 Pipeline entry points:
 
 - `make analyze` — Run the heavy analysis sweep (mutation testing, benchmarks)
 - `make audited` — Re-scan the pinned dependencies and published artifacts for new vulnerabilities
 - `make check-outdated` — Report every pinned dependency that lags upstream
-- `make published` — Build, test, scan and publish the release artifacts
+- `make ready-to-publish` — Run the pseudo-CI pipeline locally — build, test and scan, without publishing
 
 ## Policies
 
@@ -81,16 +116,11 @@ Pipeline entry points:
 - [Security policy](SECURITY.md)
 - [Getting support](SUPPORT.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
+- [AI and LLM Policy](AI_POLICY.md)
 
 ## Links
 
-### Project
-
-- [Doomsday Clock Exporter on Codeberg](https://codeberg.org/o9s/doomsday-clock-exporter)
-- [Doomsday Clock Exporter on GitHub](https://github.com/damian-buho/o9s-doomsday-clock-exporter)
-- [Doomsday Clock Exporter on kiota.ch](https://kiota.ch/o9s/doomsday-clock-exporter)
-- [Issues on Codeberg](https://codeberg.org/o9s/doomsday-clock-exporter/issues)
-- [Issues on GitHub](https://github.com/damian-buho/o9s-doomsday-clock-exporter/issues)
+- [Projectfile Specification](https://projectfile.org)
 
 ## License
 
