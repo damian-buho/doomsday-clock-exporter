@@ -34,7 +34,7 @@ SPDX-License-Identifier: MIT
 - `go_*` metrics (goroutines, GC, memory, etc.) and `process_*` metrics (RSS, open FDs, CPU) let the operator monitor the exporter itself, not just the Doomsday Clock value.
 - No extra wiring is required — `promhttp.Handler()` serves the default gatherer, which already carries these collectors.
 
-## Inherited from B19/Ubuntu 1.4.0
+## Inherited from B19/Ubuntu 1.4.1
 
 ### Persistent APT cache across builds
 
