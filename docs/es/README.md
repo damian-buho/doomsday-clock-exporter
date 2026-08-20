@@ -25,7 +25,7 @@ Exportador de Prometheus para el valor del Reloj del Juicio Final
 - Comprobación de estado específica del servicio
 - Métricas de autoobservabilidad
 
-### Heredado de B19/Ubuntu 1.4.1
+### Heredado de B19/Ubuntu
 
 - Caché APT persistente entre compilaciones
 - Gestión de procesos de servicio con enrutado de logs (b19-exec)

@@ -34,7 +34,7 @@ SPDX-License-Identifier: MIT
 - `go_*` metrics (goroutines, GC, memory, etc.) and `process_*` metrics (RSS, open FDs, CPU) let the operator monitor the exporter itself, not just the Doomsday Clock value.
 - No extra wiring is required — `promhttp.Handler()` serves the default gatherer, which already carries these collectors.
 
-## Inherited from B19/Ubuntu 1.4.1
+## Inherited from B19/Ubuntu
 
 ### Persistent APT cache across builds
 
@@ -101,7 +101,7 @@ SPDX-License-Identifier: MIT
 ### Feature toggles for all subsystems
 
 - Every major subsystem (entrypoint, healthchecks, bootstrap, tests, secrets, port validation, i18n, shell hooks) can be disabled at runtime via environment variables.
-- Individual entrypoint and bootstrap hooks can be skipped by name without disabling the whole subsystem.
+- Individual entrypoint, bootstrap and health-check hooks can be skipped by name without disabling the whole subsystem.
 - No image rebuild required — toggles are runtime-only.
 
 ### Built-in health monitoring (healthcheck.d)
