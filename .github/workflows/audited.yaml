@@ -15,6 +15,7 @@ name: audited
 env:
   M6E_TAG: ${{ vars.BASE_IMAGE_DEFAULT_VERSION || 'latest' }}
   M6E_RUN_SCOPE: ${{ github.run_id }}-${{ github.run_attempt }}
+  GOPROXY: https://kiota.ch/api/packages/projectfile/go,direct
 jobs:
   audited:
     runs-on: ubuntu-latest
