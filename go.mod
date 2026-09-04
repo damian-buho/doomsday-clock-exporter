@@ -4,7 +4,7 @@
 
 module kiota.ch/o9s/doomsday-clock-exporter
 
-go 1.26.6
+go 1.26.7
 
 require (
 	github.com/prometheus/client_golang v1.24.1
