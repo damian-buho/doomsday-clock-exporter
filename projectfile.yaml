@@ -23,7 +23,17 @@ includes:
   - .makefile/library/traits/go-binary.yaml
   - https://kiota.ch/damian-buho/metadata/raw/branch/main/include.yaml
   - https://kiota.ch/o9s/metadata/raw/branch/main/include.yaml
+keywords:
+  - doomsday-clock
+  - prometheus
+  - exporter
+  - monitoring
+  - go
+  - docker
 kind: SoftwareSourceCode
+license:
+  covers: project
+  spdx: ""
 links:
   - label:
       en: Doomsday Clock Exporter on Codeberg
@@ -75,9 +85,6 @@ org:
         command: doomsday-clock-exporter
         kind: binary
         path: dist/doomsday-clock-exporter
-    build:
-      args:
-        GOPROXY: ""
     ci:
       forgejo:
         credentials:
@@ -121,15 +128,5 @@ repositories:
     role: origin
     type: git
     url: ssh://git@kiota.ch/o9s/doomsday-clock-exporter.git
-keywords:
-  - doomsday-clock
-  - prometheus
-  - exporter
-  - monitoring
-  - go
-  - docker
 technologies:
   - go
-license:
-  covers: project
-  spdx: "MIT"
