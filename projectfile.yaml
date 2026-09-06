@@ -72,6 +72,7 @@ org:
   projectfile:
     artifacts:
       go-binary:
+        command: doomsday-clock-exporter
         kind: binary
         path: dist/doomsday-clock-exporter
     build:

@@ -59,7 +59,7 @@ pf-cli-managed: yes
 
 ## Що надає цей проєкт
 
-- **Виконуваний файл** `dist/doomsday-clock-exporter`
+- **Виконуваний файл** `doomsday-clock-exporter`
 - **Образ контейнера** `ghcr.io/damian-buho/o9s/doomsday-clock-exporter:latest`
 - **Образ контейнера** `docker.io/damianbuho/o9s-doomsday-clock-exporter:latest`
 
@@ -90,6 +90,12 @@ docker pull kiota.ch/o9s/doomsday-clock-exporter:latest
 ```
 
 ## Використання
+
+Потім запустіть його:
+
+```sh
+doomsday-clock-exporter --help
+```
 
 Запустіть стек локально:
 

@@ -59,7 +59,7 @@ Consulta [FEATURES.md](FEATURES.md) para ver la lista completa.
 
 ## Qué entrega este proyecto
 
-- **Ejecutable** `dist/doomsday-clock-exporter`
+- **Ejecutable** `doomsday-clock-exporter`
 - **Imagen de contenedor** `ghcr.io/damian-buho/o9s/doomsday-clock-exporter:latest`
 - **Imagen de contenedor** `docker.io/damianbuho/o9s-doomsday-clock-exporter:latest`
 
@@ -90,6 +90,12 @@ docker pull kiota.ch/o9s/doomsday-clock-exporter:latest
 ```
 
 ## Uso
+
+Después, ejecútalo:
+
+```sh
+doomsday-clock-exporter --help
+```
 
 Levanta la pila localmente:
 

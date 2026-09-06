@@ -57,7 +57,7 @@ See [FEATURES.md](FEATURES.md) for the full list.
 
 ## What this provides
 
-- **Executable** `dist/doomsday-clock-exporter`
+- **Executable** `doomsday-clock-exporter`
 - **Container image** `ghcr.io/damian-buho/o9s/doomsday-clock-exporter:latest`
 - **Container image** `docker.io/damianbuho/o9s-doomsday-clock-exporter:latest`
 
@@ -88,6 +88,12 @@ docker pull kiota.ch/o9s/doomsday-clock-exporter:latest
 ```
 
 ## Usage
+
+Then run it:
+
+```sh
+doomsday-clock-exporter --help
+```
 
 Bring the stack up locally:
 
