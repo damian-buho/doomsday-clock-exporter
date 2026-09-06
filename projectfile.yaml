@@ -33,7 +33,7 @@ keywords:
 kind: SoftwareSourceCode
 license:
   covers: project
-  spdx: ""
+  spdx: "MIT"
 links:
   - label:
       en: Doomsday Clock Exporter on Codeberg
