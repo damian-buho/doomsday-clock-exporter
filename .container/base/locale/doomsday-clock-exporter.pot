@@ -4,10 +4,10 @@
 # SPDX-License-Identifier: MIT
 msgid ""
 msgstr ""
-"Project-Id-Version: doomsday-clock-exporter 1.0.0-3-ga37da3b\n"
+"Project-Id-Version: doomsday-clock-exporter 1.1.5\n"
 "Report-Msgid-Bugs-To: https://codeberg.org/o9s/doomsday-clock-exporter/"
 "issues\n"
-"POT-Creation-Date: 2026-08-07 22:09+0000\n"
+"POT-Creation-Date: 2026-09-07 03:47+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -36,10 +36,10 @@ msgstr ""
 msgid "Starting"
 msgstr ""
 
-#: .container/user/healthcheck.d/100-check-service.sh:12
+#: .container/user/healthcheck.d/1100-check-service.sh:12
 msgid "Health check failed on port %s"
 msgstr ""
 
-#: .container/user/healthcheck.d/100-check-service.sh:16
+#: .container/user/healthcheck.d/1100-check-service.sh:16
 msgid "Service is responsive on port %s"
 msgstr ""
