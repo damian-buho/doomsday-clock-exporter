@@ -60,30 +60,10 @@ Consulta [FEATURES.md](FEATURES.md) para ver la lista completa.
 ## Qué entrega este proyecto
 
 - **Ejecutable** `doomsday-clock-exporter`
-- **Imagen de contenedor** `ghcr.io/damian-buho/o9s/doomsday-clock-exporter:latest`
-- **Imagen de contenedor** `docker.io/damianbuho/o9s-doomsday-clock-exporter:latest`
 
 ## Instalación
 
-Descarga la imagen de contenedor publicada:
-
-### Descargar de GHCR
-
-```sh
-docker pull ghcr.io/damian-buho/o9s/doomsday-clock-exporter:latest
-```
-
-### Descargar de DockerHub
-
-```sh
-docker pull docker.io/damianbuho/o9s-doomsday-clock-exporter:latest
-```
-
-Las versiones estables también publican las etiquetas `X.Y.Z`, `X.Y` y `X`: descarga el nivel de precisión que quieras fijar.
-
 Si los registros anteriores no están disponibles, descarga desde el origen:
-
-### Descargar de Kiota
 
 ```sh
 docker pull kiota.ch/o9s/doomsday-clock-exporter:latest
