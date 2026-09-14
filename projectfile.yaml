@@ -83,6 +83,7 @@ org:
           - url: ssh://git@kiota.ch/b19/ubuntu.git
     image:
       org: damian-buho
+      flatpath: ${name}
     status: maintained
 repositories:
   - branch: main
