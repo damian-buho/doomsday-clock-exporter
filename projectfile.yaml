@@ -24,6 +24,7 @@ includes:
   - .makefile/library/languages/go.yaml
   - .makefile/library/traits/go-binary.yaml
   - .makefile/container/traits/readme-service.yaml
+  - https://kiota.ch/damian-buho/metadata/raw/branch/main/ghcr.yaml
   - https://kiota.ch/damian-buho/metadata/raw/branch/main/github.yaml
   - https://kiota.ch/damian-buho/metadata/raw/branch/main/include.yaml
 keywords:
@@ -42,14 +43,18 @@ links:
       en: Doomsday Clock Exporter on GitHub
       es: Doomsday Clock Exporter en GitHub
       uk: Doomsday Clock Exporter на GitHub
-    tags: [public, badges, badges-github]
+    tags:
+      - public
+      - badges
+      - badges-github
     type: source-code
     url: https://github.com/damian-buho/doomsday-clock-exporter
   - label:
       en: Issues on GitHub
       es: Incidencias en GitHub
       uk: Задачі на GitHub
-    tags: [support]
+    tags:
+      - support
     type: bugs
     url: https://github.com/damian-buho/doomsday-clock-exporter/issues
   - label:
@@ -59,6 +64,13 @@ links:
     preferred: true
     type: source-code
     url: https://kiota.ch/damian-buho/doomsday-clock-exporter
+  - derived: true
+    label:
+      en: Packages on GHCR
+      es: Paquetes en GHCR
+      uk: Пакунки на GHCR
+    type: package-registry
+    url: https://github.com/damian-buho/doomsday-clock-exporter/pkgs/container/damian-buho%2Fdoomsday-clock-exporter
 org:
   projectfile:
     architecture:

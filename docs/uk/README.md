@@ -62,6 +62,7 @@ pf-cli-managed: yes
 ## Що надає цей проєкт
 
 - **Виконуваний файл** `doomsday-clock-exporter`
+- **Образ контейнера** `ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest`
 
 ## Підтримувані платформи
 
@@ -71,7 +72,19 @@ pf-cli-managed: yes
 
 ## Встановлення
 
+Завантажте опублікований образ контейнера:
+
+### Завантажити з GHCR
+
+```sh
+docker pull ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest
+```
+
+Стабільні випуски також публікують теґи `X.Y.Z`, `X.Y` і `X` — завантажте той рівень точності, який хочете зафіксувати.
+
 Якщо наведені вище реєстри недоступні, завантажте з джерела:
+
+### Завантажити з Kiota
 
 ```sh
 docker pull kiota.ch/damian-buho/doomsday-clock-exporter:latest

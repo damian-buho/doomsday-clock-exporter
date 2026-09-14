@@ -60,6 +60,7 @@ See [FEATURES.md](FEATURES.md) for the full list.
 ## What this provides
 
 - **Executable** `doomsday-clock-exporter`
+- **Container image** `ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest`
 
 ## Supported platforms
 
@@ -69,7 +70,19 @@ See [FEATURES.md](FEATURES.md) for the full list.
 
 ## Installation
 
+Pull the published container image:
+
+### Pull from GHCR
+
+```sh
+docker pull ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest
+```
+
+Stable releases also publish `X.Y.Z`, `X.Y` and `X` tags — pull the precision you want to pin.
+
 If the registries above are unreachable, pull from the origin instead:
+
+### Pull from Kiota
 
 ```sh
 docker pull kiota.ch/damian-buho/doomsday-clock-exporter:latest
