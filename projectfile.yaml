@@ -61,6 +61,10 @@ links:
     url: https://kiota.ch/damian-buho/doomsday-clock-exporter
 org:
   projectfile:
+    architecture:
+      - amd64
+      - arm64
+      - riscv64
     artifacts:
       go-binary:
         command: doomsday-clock-exporter
@@ -76,6 +80,8 @@ org:
             axes:
               GOARCH:
                 - amd64
+                - arm64
+                - riscv64
               GOOS:
                 - linux
         gsa:
@@ -83,6 +89,8 @@ org:
             axes:
               GOARCH:
                 - amd64
+                - arm64
+                - riscv64
               GOOS:
                 - linux
         binaries-are-released:
@@ -90,6 +98,8 @@ org:
             axes:
               GOARCH:
                 - amd64
+                - arm64
+                - riscv64
               GOOS:
                 - linux
     conventions:

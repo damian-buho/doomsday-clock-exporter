@@ -63,6 +63,12 @@ Consulta [FEATURES.md](FEATURES.md) para ver la lista completa.
 
 - **Ejecutable** `doomsday-clock-exporter`
 
+## Plataformas admitidas
+
+- `linux/amd64`
+- `linux/arm64`
+- `linux/riscv64`
+
 ## Instalación
 
 Si los registros anteriores no están disponibles, descarga desde el origen:
