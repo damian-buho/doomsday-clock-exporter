@@ -12,6 +12,12 @@ pf-cli-managed: yes
 Дякуємо, що користуєтеся **Doomsday Clock Exporter**!
 Цей документ пояснює, де шукати допомогу та як ставити зрозумілі запитання.
 
+## Перш ніж питати
+
+Перегляньте це спершу — можливо, відповідь уже є:
+
+- [Задачі на GitHub](https://github.com/damian-buho/doomsday-clock-exporter/issues)
+
 ## Куди звертатися
 
 - **Повідомити про вразливість безпеки** — [SECURITY.md](SECURITY.md)
