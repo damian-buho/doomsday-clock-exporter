@@ -27,7 +27,7 @@ jobs:
     runs-on: docker
     if: (github.event_name == 'workflow_dispatch') || (github.event_name == 'schedule')
     env:
-      M6E_IMAGE_PUBLISHED: kiota.ch/o9s/doomsday-clock-exporter:latest
+      M6E_IMAGE_PUBLISHED: kiota.ch/damian-buho/doomsday-clock-exporter:latest
     steps:
       - uses: actions/checkout@v7
         with:
@@ -40,7 +40,7 @@ jobs:
           version: ${{ env.M6E_TAG }}
           run: auto-grype image
           env: |-
-            M6E_IMAGE_PUBLISHED=kiota.ch/o9s/doomsday-clock-exporter:latest
+            M6E_IMAGE_PUBLISHED=kiota.ch/damian-buho/doomsday-clock-exporter:latest
             M6E_SHARED_CACHE=Y
           mounts: /app/data/ci-cache/grype-db:/app/.cache/grype:rw
       - name: trivy-scan-registry
@@ -50,7 +50,7 @@ jobs:
           version: ${{ env.M6E_TAG }}
           run: auto-trivy image
           env: |-
-            M6E_IMAGE_PUBLISHED=kiota.ch/o9s/doomsday-clock-exporter:latest
+            M6E_IMAGE_PUBLISHED=kiota.ch/damian-buho/doomsday-clock-exporter:latest
             M6E_SHARED_CACHE=Y
             TRIVY_CACHE_BACKEND
           mounts: /app/data/ci-cache/trivy-db:/app/.cache/trivy:rw

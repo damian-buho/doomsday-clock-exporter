@@ -4,7 +4,7 @@ SPDX-FileCopyrightText: 2026 Damián Búho <damian.buho@proton.me>
 SPDX-License-Identifier: MIT
 -->
 
-# o9s/doomsday-clock-exporter
+# damian-buho/doomsday-clock-exporter
 
 Docker image built on [b19/go](../../b19/go/AGENTS.md) and [b19/Ubuntu](../../b19/ubuntu/AGENTS.md)
 

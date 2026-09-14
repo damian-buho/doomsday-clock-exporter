@@ -24,7 +24,7 @@ contact:
     orcid: https://orcid.org/0009-0004-8579-7633
     website: https://dbuho.me
 license: MIT
-repository-code: https://kiota.ch/o9s/doomsday-clock-exporter
+repository-code: https://kiota.ch/damian-buho/doomsday-clock-exporter
 keywords:
   - doomsday-clock
   - prometheus

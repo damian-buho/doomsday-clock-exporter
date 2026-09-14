@@ -6,6 +6,7 @@ $schema: https://projectfile.org/schema/v1.json
 identity:
   created: "2026-05-28"
   name: doomsday-clock-exporter
+  namespace: me.dbuho
   summary:
     en: Prometheus exporter for the Doomsday Clock value
     es: Exportador de Prometheus para el valor del Reloj del Juicio Final
@@ -22,8 +23,8 @@ includes:
   - .makefile/b19/images/ubuntu.yaml
   - .makefile/library/languages/go.yaml
   - .makefile/library/traits/go-binary.yaml
+  - .makefile/container/traits/readme-service.yaml
   - https://kiota.ch/damian-buho/metadata/raw/branch/main/include.yaml
-  - https://kiota.ch/o9s/metadata/raw/branch/main/include.yaml
 keywords:
   - doomsday-clock
   - prometheus
@@ -34,7 +35,7 @@ keywords:
 kind: SoftwareSourceCode
 license:
   covers: project
-  spdx: ""
+  spdx: MIT
 links:
   - label:
       en: Doomsday Clock Exporter on kiota.ch
@@ -42,7 +43,7 @@ links:
       uk: Doomsday Clock Exporter на kiota.ch
     preferred: true
     type: source-code
-    url: https://kiota.ch/o9s/doomsday-clock-exporter
+    url: https://kiota.ch/damian-buho/doomsday-clock-exporter
 org:
   projectfile:
     artifacts:
@@ -80,11 +81,13 @@ org:
       fragments:
         parents:
           - url: ssh://git@kiota.ch/b19/ubuntu.git
+    image:
+      org: damian-buho
     status: maintained
 repositories:
   - branch: main
     role: origin
     type: git
-    url: ssh://git@kiota.ch/o9s/doomsday-clock-exporter.git
+    url: ssh://git@kiota.ch/damian-buho/doomsday-clock-exporter.git
 technologies:
   - go

@@ -133,9 +133,9 @@ jobs:
     runs-on: docker
     needs: ["container-ready-to-test"]
     env:
-      M6E_IMAGE_FULLNAME: o9s/doomsday-clock-exporter:${{ vars.BASE_IMAGE_DEFAULT_VERSION || 'latest' }}-${{ github.run_id }}
-      M6E_COMPOSE_PROJECT_NAME: ci-o9s-doomsday-clock-exporter-${{ github.run_id }}-${{ github.run_attempt }}
-      M6E_CONTAINER_INSTANCE: ci-o9s-doomsday-clock-exporter-${{ github.run_id }}-${{ github.run_attempt }}
+      M6E_IMAGE_FULLNAME: damian-buho/doomsday-clock-exporter:${{ vars.BASE_IMAGE_DEFAULT_VERSION || 'latest' }}-${{ github.run_id }}
+      M6E_COMPOSE_PROJECT_NAME: ci-damian-buho-doomsday-clock-exporter-${{ github.run_id }}-${{ github.run_attempt }}
+      M6E_CONTAINER_INSTANCE: ci-damian-buho-doomsday-clock-exporter-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -173,8 +173,8 @@ jobs:
       - if: ${{ always() }}
         uses: projectfile/actions/docker-cleanup@v1
         with:
-          image: o9s/doomsday-clock-exporter:${{ env.M6E_TAG }}-${{ github.run_id }}
-          network: ci-o9s-doomsday-clock-exporter-${{ env.M6E_RUN_SCOPE }}-network
+          image: damian-buho/doomsday-clock-exporter:${{ env.M6E_TAG }}-${{ github.run_id }}
+          network: ci-damian-buho-doomsday-clock-exporter-${{ env.M6E_RUN_SCOPE }}-network
   container-ready-to-test:
     runs-on: docker
     needs: ["container-is-ok"]
@@ -243,7 +243,7 @@ jobs:
       group: build-${{ github.repository }}-${{ toJSON(matrix) }}
       cancel-in-progress: false
     env:
-      M6E_NAMESPACE: o9s
+      M6E_NAMESPACE: damian-buho
       M6E_PROJECT: doomsday-clock-exporter
       B19_COLOR: ${{ inputs.B19_COLOR || vars.B19_COLOR || '1' }}
       B19_FETCH_DOCKER_CACHE: ${{ inputs.B19_FETCH_DOCKER_CACHE || vars.B19_FETCH_DOCKER_CACHE || 'Y' }}
@@ -271,7 +271,7 @@ jobs:
         uses: projectfile/actions/container-build/buildah@v1
         with:
           artifact-name: image-${{ github.run_id }}
-          image: o9s/doomsday-clock-exporter:${{ env.M6E_TAG }}-${{ github.run_id }}
+          image: damian-buho/doomsday-clock-exporter:${{ env.M6E_TAG }}-${{ github.run_id }}
           build-args: |-
             B19_COLOR=${{ inputs.B19_COLOR || vars.B19_COLOR || '1' }}
             B19_FETCH_DOCKER_CACHE=${{ inputs.B19_FETCH_DOCKER_CACHE || vars.B19_FETCH_DOCKER_CACHE || 'Y' }}
@@ -287,7 +287,7 @@ jobs:
             M6E_APT_CACHE_HOST=${{ inputs.M6E_APT_CACHE_HOST || vars.M6E_APT_CACHE_HOST }}
             M6E_APT_CACHE_PORT=${{ inputs.M6E_APT_CACHE_PORT || vars.M6E_APT_CACHE_PORT }}
             M6E_BUILD_DEBUG=${{ inputs.M6E_BUILD_DEBUG || vars.M6E_BUILD_DEBUG }}
-            M6E_NAMESPACE=o9s
+            M6E_NAMESPACE=damian-buho
             M6E_NEAR_CACHE_HOST=${{ inputs.M6E_NEAR_CACHE_HOST || vars.M6E_NEAR_CACHE_HOST }}
             M6E_NEAR_CACHE_PORT=${{ inputs.M6E_NEAR_CACHE_PORT || vars.M6E_NEAR_CACHE_PORT }}
             M6E_PROJECT=doomsday-clock-exporter
@@ -410,7 +410,7 @@ jobs:
         uses: projectfile/actions/oci-push@v1
         with:
           artifact-name: image-${{ github.run_id }}
-          image: o9s/doomsday-clock-exporter:${{ env.M6E_TAG }}-${{ github.run_id }}
+          image: damian-buho/doomsday-clock-exporter:${{ env.M6E_TAG }}-${{ github.run_id }}
           version: ${{ github.ref_name }}
           # The branch this run is on, empty on a tag. Non-empty collapses the cascade to
           # one `latest-<branch>` tag on the primary sink, so a branch build is testable
@@ -426,7 +426,7 @@ jobs:
           # the sink that declared it — so one archive lands under whatever path grammar
           # each registry wants. Credentials key on the SINK name.
           refs: |
-            kiota kiota.ch/o9s/doomsday-clock-exporter:latest
+            kiota kiota.ch/damian-buho/doomsday-clock-exporter:latest
           # This CELL's destination, off the publish axis: the job runs one cell per
           # place the archive goes, so a registry refusing a push fails only its own.
           sink: ${{ matrix.M6E_PUBLISH_SINK }}
