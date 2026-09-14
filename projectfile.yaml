@@ -34,7 +34,15 @@ keywords:
 kind: SoftwareSourceCode
 license:
   covers: project
-  spdx: "MIT"
+  spdx: ""
+links:
+  - label:
+      en: Doomsday Clock Exporter on kiota.ch
+      es: Doomsday Clock Exporter en kiota.ch
+      uk: Doomsday Clock Exporter на kiota.ch
+    preferred: true
+    type: source-code
+    url: https://kiota.ch/o9s/doomsday-clock-exporter
 org:
   projectfile:
     artifacts:
@@ -73,18 +81,10 @@ org:
         parents:
           - url: ssh://git@kiota.ch/b19/ubuntu.git
     status: maintained
-technologies:
-  - go
-links:
-  - label:
-      en: Doomsday Clock Exporter on kiota.ch
-      es: Doomsday Clock Exporter en kiota.ch
-      uk: Doomsday Clock Exporter на kiota.ch
-    preferred: true
-    type: source-code
-    url: https://kiota.ch/o9s/doomsday-clock-exporter
 repositories:
   - branch: main
     role: origin
     type: git
     url: ssh://git@kiota.ch/o9s/doomsday-clock-exporter.git
+technologies:
+  - go
