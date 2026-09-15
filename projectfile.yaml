@@ -83,12 +83,6 @@ org:
         kind: binary
         path: dist/doomsday-clock-exporter
     ci:
-      forgejo:
-        credentials:
-          FORGEJO_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-      gha:
-        credentials:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       nodes:
         binaries-are-built:
           matrix:
