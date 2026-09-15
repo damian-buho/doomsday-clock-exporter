@@ -35,7 +35,7 @@ jobs:
           restore-keys: |
             ci-cache-go-
       - name: check-outdated-go
-        uses: projectfile-org/actions/run-tool@f59de038dbbb35b952cd5dda42d3c907f13d3113 # v1
+        uses: projectfile-org/actions/run-tool@8773d4ee49269c26354a3b93df4479ab03efb4d6 # v1
         with:
           image: ${{ vars.D9T_GO_TOOLS_IMAGE || format('{0}/d9t/go-tools', vars.SOURCE_DOCKER_REGISTRY || 'ghcr.io/damian-buho') }}
           version: ${{ env.M6E_TAG }}
