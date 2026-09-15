@@ -575,11 +575,11 @@ Analyze Go binary size (go-size-analyzer)
 
 ### `check-outdated-go`
 
-List available Go module updates
+Fail on direct Go modules that lag upstream
 
-`go list -u -m all`
+`go-outdated`
 
-> Image: GO_TOOL_IMAGE
+> Image: D9T_GO_TOOLS_IMAGE
 
 ### `go-fix`
 
