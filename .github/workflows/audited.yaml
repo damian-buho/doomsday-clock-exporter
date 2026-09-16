@@ -37,13 +37,15 @@ jobs:
           persist-credentials: false
       - name: restore grype-db
         uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        if: vars.CI_SKIP_IMAGE_IS_AUDITED != 'true' && vars.CI_SKIP_GRYPE_SCAN_REGISTRY != 'true'
         with:
           path: ${{ runner.temp }}/ci-cache/grype-db
           key: ci-cache-grype-db-
           restore-keys: |
             ci-cache-grype-db-
       - name: grype-scan-registry
-        uses: projectfile-org/actions/run-tool@8773d4ee49269c26354a3b93df4479ab03efb4d6 # v1
+        if: vars.CI_SKIP_IMAGE_IS_AUDITED != 'true' && vars.CI_SKIP_GRYPE_SCAN_REGISTRY != 'true'
+        uses: projectfile-org/actions/run-tool@78f06c9316d295ea7b646ad1bdac87b76b7f999a # v1
         with:
           image: ${{ vars.D9T_GO_TOOLS_IMAGE || format('{0}/d9t/go-tools', vars.SOURCE_DOCKER_REGISTRY || 'ghcr.io/damian-buho') }}
           version: ${{ env.M6E_TAG }}
@@ -54,18 +56,21 @@ jobs:
           mounts: ${{ runner.temp }}/ci-cache/grype-db:/app/.cache/grype:rw
       - name: save grype-db
         uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
+        if: vars.CI_SKIP_IMAGE_IS_AUDITED != 'true' && vars.CI_SKIP_GRYPE_SCAN_REGISTRY != 'true'
         with:
           path: ${{ runner.temp }}/ci-cache/grype-db
           key: ci-cache-grype-db-${{ github.run_id }}
       - name: restore trivy-db
         uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        if: vars.CI_SKIP_IMAGE_IS_AUDITED != 'true' && vars.CI_SKIP_TRIVY_SCAN_REGISTRY != 'true'
         with:
           path: ${{ runner.temp }}/ci-cache/trivy-db
           key: ci-cache-trivy-db-
           restore-keys: |
             ci-cache-trivy-db-
       - name: trivy-scan-registry
-        uses: projectfile-org/actions/run-tool@8773d4ee49269c26354a3b93df4479ab03efb4d6 # v1
+        if: vars.CI_SKIP_IMAGE_IS_AUDITED != 'true' && vars.CI_SKIP_TRIVY_SCAN_REGISTRY != 'true'
+        uses: projectfile-org/actions/run-tool@78f06c9316d295ea7b646ad1bdac87b76b7f999a # v1
         with:
           image: ${{ vars.D9T_GO_TOOLS_IMAGE || format('{0}/d9t/go-tools', vars.SOURCE_DOCKER_REGISTRY || 'ghcr.io/damian-buho') }}
           version: ${{ env.M6E_TAG }}
@@ -77,6 +82,7 @@ jobs:
           mounts: ${{ runner.temp }}/ci-cache/trivy-db:/app/.cache/trivy:rw
       - name: save trivy-db
         uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
+        if: vars.CI_SKIP_IMAGE_IS_AUDITED != 'true' && vars.CI_SKIP_TRIVY_SCAN_REGISTRY != 'true'
         with:
           path: ${{ runner.temp }}/ci-cache/trivy-db
           key: ci-cache-trivy-db-${{ github.run_id }}
@@ -104,13 +110,15 @@ jobs:
           persist-credentials: false
       - name: restore grype-db
         uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        if: vars.CI_SKIP_SOURCE_IS_SECURE != 'true' && vars.CI_SKIP_GRYPE_SCAN_SOURCE != 'true'
         with:
           path: ${{ runner.temp }}/ci-cache/grype-db
           key: ci-cache-grype-db-
           restore-keys: |
             ci-cache-grype-db-
       - name: grype-scan-source
-        uses: projectfile-org/actions/run-tool@8773d4ee49269c26354a3b93df4479ab03efb4d6 # v1
+        if: vars.CI_SKIP_SOURCE_IS_SECURE != 'true' && vars.CI_SKIP_GRYPE_SCAN_SOURCE != 'true'
+        uses: projectfile-org/actions/run-tool@78f06c9316d295ea7b646ad1bdac87b76b7f999a # v1
         with:
           image: ${{ vars.D9T_GO_TOOLS_IMAGE || format('{0}/d9t/go-tools', vars.SOURCE_DOCKER_REGISTRY || 'ghcr.io/damian-buho') }}
           version: ${{ env.M6E_TAG }}
@@ -120,18 +128,21 @@ jobs:
           mounts: ${{ runner.temp }}/ci-cache/grype-db:/app/.cache/grype:rw
       - name: save grype-db
         uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
+        if: vars.CI_SKIP_SOURCE_IS_SECURE != 'true' && vars.CI_SKIP_GRYPE_SCAN_SOURCE != 'true'
         with:
           path: ${{ runner.temp }}/ci-cache/grype-db
           key: ci-cache-grype-db-${{ github.run_id }}
       - name: restore osv-db
         uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        if: vars.CI_SKIP_SOURCE_IS_SECURE != 'true' && vars.CI_SKIP_OSV_SCANNER_SCAN_SOURCE != 'true'
         with:
           path: ${{ runner.temp }}/ci-cache/osv-db
           key: ci-cache-osv-db-
           restore-keys: |
             ci-cache-osv-db-
       - name: osv-scanner-scan-source
-        uses: projectfile-org/actions/run-tool@8773d4ee49269c26354a3b93df4479ab03efb4d6 # v1
+        if: vars.CI_SKIP_SOURCE_IS_SECURE != 'true' && vars.CI_SKIP_OSV_SCANNER_SCAN_SOURCE != 'true'
+        uses: projectfile-org/actions/run-tool@78f06c9316d295ea7b646ad1bdac87b76b7f999a # v1
         with:
           image: ${{ vars.D9T_GO_TOOLS_IMAGE || format('{0}/d9t/go-tools', vars.SOURCE_DOCKER_REGISTRY || 'ghcr.io/damian-buho') }}
           version: ${{ env.M6E_TAG }}
@@ -142,18 +153,21 @@ jobs:
           mounts: ${{ runner.temp }}/ci-cache/osv-db:/app/.cache/osv:rw
       - name: save osv-db
         uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
+        if: vars.CI_SKIP_SOURCE_IS_SECURE != 'true' && vars.CI_SKIP_OSV_SCANNER_SCAN_SOURCE != 'true'
         with:
           path: ${{ runner.temp }}/ci-cache/osv-db
           key: ci-cache-osv-db-${{ github.run_id }}
       - name: restore trivy-db
         uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        if: vars.CI_SKIP_SOURCE_IS_SECURE != 'true' && vars.CI_SKIP_TRIVY_SCAN_SOURCE != 'true'
         with:
           path: ${{ runner.temp }}/ci-cache/trivy-db
           key: ci-cache-trivy-db-
           restore-keys: |
             ci-cache-trivy-db-
       - name: trivy-scan-source
-        uses: projectfile-org/actions/run-tool@8773d4ee49269c26354a3b93df4479ab03efb4d6 # v1
+        if: vars.CI_SKIP_SOURCE_IS_SECURE != 'true' && vars.CI_SKIP_TRIVY_SCAN_SOURCE != 'true'
+        uses: projectfile-org/actions/run-tool@78f06c9316d295ea7b646ad1bdac87b76b7f999a # v1
         with:
           image: ${{ vars.D9T_GO_TOOLS_IMAGE || format('{0}/d9t/go-tools', vars.SOURCE_DOCKER_REGISTRY || 'ghcr.io/damian-buho') }}
           version: ${{ env.M6E_TAG }}
@@ -164,6 +178,7 @@ jobs:
           mounts: ${{ runner.temp }}/ci-cache/trivy-db:/app/.cache/trivy:rw
       - name: save trivy-db
         uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
+        if: vars.CI_SKIP_SOURCE_IS_SECURE != 'true' && vars.CI_SKIP_TRIVY_SCAN_SOURCE != 'true'
         with:
           path: ${{ runner.temp }}/ci-cache/trivy-db
           key: ci-cache-trivy-db-${{ github.run_id }}
