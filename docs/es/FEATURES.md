@@ -36,7 +36,7 @@ SPDX-License-Identifier: MIT
 - Las métricas `go_*` (goroutines, GC, memoria, etc.) y `process_*` (RSS, descriptores abiertos, CPU) permiten al operador monitorizar el propio exportador, no solo el valor del Reloj del Juicio Final.
 - No hace falta cableado adicional — `promhttp.Handler()` sirve el gatherer por defecto, que ya lleva estos recolectores.
 
-## Heredado de B19/Ubuntu
+## Heredado de B19 / Ubuntu
 
 ### Caché APT persistente entre compilaciones
 
