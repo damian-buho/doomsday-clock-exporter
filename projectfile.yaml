@@ -118,6 +118,10 @@ org:
     image:
       org: damian-buho
       flatpath: ${name}
+    forge:
+      # The account IS the org, so the GitHub repository is the bare name
+      org: damian-buho
+      flatpath: ${name}
     status: maintained
 repositories:
   - role: mirror
