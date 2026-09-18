@@ -24,9 +24,10 @@ includes:
   - .makefile/container/traits/readme-service.yaml
   - .makefile/library/languages/go.yaml
   - .makefile/library/traits/go-binary.yaml
-  - https://kiota.ch/damian-buho/metadata/raw/branch/main/registry/ghcr.yaml
+  - https://kiota.ch/damian-buho/metadata/raw/branch/main/forge/codeberg.yaml
   - https://kiota.ch/damian-buho/metadata/raw/branch/main/forge/github.yaml
   - https://kiota.ch/damian-buho/metadata/raw/branch/main/include.yaml
+  - https://kiota.ch/damian-buho/metadata/raw/branch/main/registry/ghcr.yaml
 keywords:
   - doomsday-clock
   - prometheus
@@ -43,6 +44,7 @@ links:
       en: Doomsday Clock Exporter on GitHub
       es: Doomsday Clock Exporter en GitHub
       uk: Doomsday Clock Exporter на GitHub
+    priority: 80
     tags:
       - public
       - badges
@@ -53,6 +55,7 @@ links:
       en: Issues on GitHub
       es: Incidencias en GitHub
       uk: Задачі на GitHub
+    priority: 80
     tags:
       - support
     type: bugs
@@ -62,10 +65,30 @@ links:
       es: Doomsday Clock Exporter en kiota.ch
       uk: Doomsday Clock Exporter на kiota.ch
     preferred: true
+    priority: 10
     type: source-code
     url: https://kiota.ch/damian-buho/doomsday-clock-exporter
-  - derived: true
-    label:
+  - label:
+      en: Doomsday Clock Exporter on Codeberg
+      es: Doomsday Clock Exporter en Codeberg
+      uk: Doomsday Clock Exporter на Codeberg
+    priority: 90
+    tags:
+      - public
+      - badges
+      - badges-gitea
+    type: source-code
+    url: https://codeberg.org/damian-buho/doomsday-clock-exporter
+  - label:
+      en: Issues on Codeberg
+      es: Incidencias en Codeberg
+      uk: Задачі на Codeberg
+    priority: 90
+    tags:
+      - support
+    type: bugs
+    url: https://codeberg.org/damian-buho/doomsday-clock-exporter/issues
+  - label:
       en: Packages on GHCR
       es: Paquetes en GHCR
       uk: Пакунки на GHCR
@@ -131,5 +154,8 @@ repositories:
     role: origin
     type: git
     url: ssh://git@kiota.ch/damian-buho/doomsday-clock-exporter.git
+  - role: mirror
+    type: git
+    url: git@codeberg.org:damian-buho/doomsday-clock-exporter.git
 technologies:
   - go
