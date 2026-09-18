@@ -16,6 +16,7 @@ pf-cli-managed: yes
 
 Перегляньте це спершу — можливо, відповідь уже є:
 
+- [Задачі на Codeberg](https://codeberg.org/damian-buho/doomsday-clock-exporter/issues)
 - [Задачі на GitHub](https://github.com/damian-buho/doomsday-clock-exporter/issues)
 
 ## Куди звертатися
