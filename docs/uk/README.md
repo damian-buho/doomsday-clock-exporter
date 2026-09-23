@@ -63,6 +63,7 @@ pf-cli-managed: yes
 
 - **Виконуваний файл** `doomsday-clock-exporter`
 - **Образ контейнера** `ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest`
+- **Образ контейнера** `docker.io/damianbuho/doomsday-clock-exporter:latest`
 
 ## Підтримувані платформи
 
@@ -78,6 +79,12 @@ pf-cli-managed: yes
 
 ```sh
 docker pull ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest
+```
+
+### Завантажити з DockerHub
+
+```sh
+docker pull docker.io/damianbuho/doomsday-clock-exporter:latest
 ```
 
 Стабільні випуски також публікують теґи `X.Y.Z`, `X.Y` і `X` — завантажте той рівень точності, який хочете зафіксувати.

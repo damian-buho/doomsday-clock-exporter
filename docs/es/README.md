@@ -63,6 +63,7 @@ Consulta [FEATURES.md](FEATURES.md) para ver la lista completa.
 
 - **Ejecutable** `doomsday-clock-exporter`
 - **Imagen de contenedor** `ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest`
+- **Imagen de contenedor** `docker.io/damianbuho/doomsday-clock-exporter:latest`
 
 ## Plataformas admitidas
 
@@ -78,6 +79,12 @@ Descarga la imagen de contenedor publicada:
 
 ```sh
 docker pull ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest
+```
+
+### Descargar de DockerHub
+
+```sh
+docker pull docker.io/damianbuho/doomsday-clock-exporter:latest
 ```
 
 Las versiones estables también publican las etiquetas `X.Y.Z`, `X.Y` y `X`: descarga el nivel de precisión que quieras fijar.

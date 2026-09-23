@@ -27,6 +27,7 @@ includes:
   - https://kiota.ch/damian-buho/metadata/raw/branch/main/forge/codeberg.yaml
   - https://kiota.ch/damian-buho/metadata/raw/branch/main/forge/github.yaml
   - https://kiota.ch/damian-buho/metadata/raw/branch/main/include.yaml
+  - https://kiota.ch/damian-buho/metadata/raw/branch/main/registry/dockerhub.yaml
   - https://kiota.ch/damian-buho/metadata/raw/branch/main/registry/ghcr.yaml
 keywords:
   - doomsday-clock
@@ -94,6 +95,12 @@ links:
       uk: Пакунки на GHCR
     type: package-registry
     url: https://github.com/damian-buho/doomsday-clock-exporter/pkgs/container/damian-buho%2Fdoomsday-clock-exporter
+  - label:
+      en: Packages on Docker Hub
+      es: Paquetes en Docker Hub
+      uk: Пакунки на Docker Hub
+    type: package-registry
+    url: https://hub.docker.com/r/damianbuho/doomsday-clock-exporter
 org:
   projectfile:
     architecture:
