@@ -25,7 +25,7 @@ Prometheus exporter that scrapes the Bulletin of the Atomic Scientists Doomsday 
 - Service-specific healthcheck
 - Self-observability metrics
 
-It also inherits the features of Inherited from B19 / Ubuntu — see [FEATURES.md](FEATURES.md) for the full list.
+It also inherits the features of B19 / Ubuntu — see [Features](docs/FEATURES.md) for the full list.
 
 ## Quick Start
 
