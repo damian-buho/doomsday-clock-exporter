@@ -107,6 +107,13 @@ org:
       - arm64
       - riscv64
     artifacts:
+      exporter:
+        kind: service
+        summary: Prometheus metrics endpoint
+        ports:
+          - port: 8080
+            name: metrics
+            path: /metrics
       go-binary:
         command: doomsday-clock-exporter
         kind: binary
