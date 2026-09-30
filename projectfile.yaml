@@ -114,6 +114,7 @@ org:
           - port: 8080
             name: metrics
             path: /metrics
+            protocol: tcp
       go-binary:
         command: doomsday-clock-exporter
         kind: binary
