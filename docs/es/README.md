@@ -12,7 +12,7 @@ pf-cli-managed: yes
 
 Exportador de Prometheus que extrae el valor del Reloj del Juicio Final del Bulletin of the Atomic Scientists y lo expone como un indicador de segundos hasta la medianoche. Un raspador en segundo plano almacena el valor en caché con un TTL configurable, sirve valores obsoletos con un indicador de degradación ante fallos del origen, y reintenta con retroceso exponencial.
 
-[![Stand with Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://damian-buho.github.io/support-ukraine/) [![Projectfile inside](https://badges.kiota.ch/static/v1?label=projectfile&message=inside&labelColor=0d0d0d&color=8c6723&style=flat-square)](https://projectfile.org) [![License](https://badges.kiota.ch/static/v1?label=license&message=MIT&color=1e5913&style=flat-square)](LICENSE) [![Commit style](https://badges.kiota.ch/static/v1?label=commits&message=conventional%20v1.0.0&color=1877aa&style=flat-square)](https://www.conventionalcommits.org/es/v1.0.0/) ![Workflow](https://badges.kiota.ch/static/v1?label=workflow&message=git-flow&color=1877aa&style=flat-square) [![Versioning](https://badges.kiota.ch/static/v1?label=versioning&message=semantic%20v2.0.0&color=1877aa&style=flat-square)](https://semver.org/lang/es/) [![PRs welcome](https://badges.kiota.ch/static/v1?label=PRs&message=welcome&color=1e5913&style=flat-square)](CONTRIBUTING.md) [![Citation](https://badges.kiota.ch/static/v1?label=citation&message=cff&color=1877aa&style=flat-square)](CITATION.cff) [![REUSE compliance](https://api.reuse.software/badge/codeberg.org/damian-buho/doomsday-clock-exporter)](https://api.reuse.software/info/codeberg.org/damian-buho/doomsday-clock-exporter)
+[![Stand with Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://damian-buho.github.io/support-ukraine/) [![Projectfile inside](https://badges.kiota.ch/static/v1?label=projectfile&message=inside&labelColor=0d0d0d&color=8c6723&style=flat-square)](https://projectfile.org) [![License](https://badges.kiota.ch/static/v1?label=license&message=MIT&color=1e5913&style=flat-square)](LICENSE) [![PRs welcome](https://badges.kiota.ch/static/v1?label=PRs&message=welcome&color=1e5913&style=flat-square)](CONTRIBUTING.md) [![REUSE compliance](https://api.reuse.software/badge/codeberg.org/damian-buho/doomsday-clock-exporter)](https://api.reuse.software/info/codeberg.org/damian-buho/doomsday-clock-exporter)
 
 ![Project status](https://badges.kiota.ch/static/v1?label=status&message=maintained&color=1d63ed&style=flat-square) [![Last commit on kiota.ch](https://badges.kiota.ch/gitea/last-commit/damian-buho/doomsday-clock-exporter?gitea_url=https://kiota.ch&label=last%20commit%20on%20kiota.ch&style=flat-square)](https://kiota.ch/damian-buho/doomsday-clock-exporter) [![Last commit on Codeberg](https://badges.kiota.ch/gitea/last-commit/damian-buho/doomsday-clock-exporter?gitea_url=https://codeberg.org&label=last%20commit%20on%20Codeberg&style=flat-square)](https://codeberg.org/damian-buho/doomsday-clock-exporter) [![Last commit on GitHub](https://badges.kiota.ch/github/last-commit/damian-buho/doomsday-clock-exporter?label=last%20commit%20on%20GitHub&style=flat-square)](https://github.com/damian-buho/doomsday-clock-exporter)
 
@@ -86,26 +86,12 @@ docker pull kiota.ch/damian-buho/doomsday-clock-exporter:latest
 
 Descarga el binario precompilado para tu plataforma desde la última versión en GitHub:
 
-#### Descargar para linux/amd64
-
 ```sh
-curl --fail --location --output doomsday-clock-exporter https://github.com/damian-buho/doomsday-clock-exporter/releases/latest/download/doomsday-clock-exporter-linux-amd64 && chmod +x doomsday-clock-exporter
+curl --fail --location --output doomsday-clock-exporter https://github.com/damian-buho/doomsday-clock-exporter/releases/latest/download/doomsday-clock-exporter-$(uname -s | tr A-Z a-z)-$(uname -m | sed -e s/x86_64/amd64/ -e s/aarch64/arm64/) && chmod +x doomsday-clock-exporter
 ./doomsday-clock-exporter --help
 ```
 
-#### Descargar para linux/arm64
-
-```sh
-curl --fail --location --output doomsday-clock-exporter https://github.com/damian-buho/doomsday-clock-exporter/releases/latest/download/doomsday-clock-exporter-linux-arm64 && chmod +x doomsday-clock-exporter
-./doomsday-clock-exporter --help
-```
-
-#### Descargar para linux/riscv64
-
-```sh
-curl --fail --location --output doomsday-clock-exporter https://github.com/damian-buho/doomsday-clock-exporter/releases/latest/download/doomsday-clock-exporter-linux-riscv64 && chmod +x doomsday-clock-exporter
-./doomsday-clock-exporter --help
-```
+Publicado para: `linux/amd64`, `linux/arm64`, `linux/riscv64`
 
 ## Uso
 
@@ -114,13 +100,13 @@ Ejecuta el servicio en segundo plano, publicando sus puertos:
 ### Desde GHCR
 
 ```sh
-docker run --detach --publish 8080:8080 ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest
+docker run --detach --publish 8080:8080/tcp ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest
 ```
 
 ### Desde DockerHub
 
 ```sh
-docker run --detach --publish 8080:8080 damianbuho/doomsday-clock-exporter:latest
+docker run --detach --publish 8080:8080/tcp damianbuho/doomsday-clock-exporter:latest
 ```
 
 Después, comprueba que responde:
