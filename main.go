@@ -230,13 +230,12 @@ func realMain() int {
 	shutdownCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	// DOOMSDAY_CLOCK_EXPORTER_* is canonical; O9S_* stays as a deprecated fallback.
-	port := envOr("DOOMSDAY_CLOCK_EXPORTER_HTTP_PORT", envOr("O9S_DOOMSDAY_CLOCK_EXPORTER_HTTP_PORT", "8080"))
-	scrapeURL := envOr("DOOMSDAY_CLOCK_EXPORTER_SCRAPE_URL", envOr("O9S_DOOMSDAY_CLOCK_EXPORTER_SCRAPE_URL",
-		"https://thebulletin.org/wp-json/wp/v2/pages/10305"))
-	cacheTTL := time.Duration(envIntOr("DOOMSDAY_CLOCK_EXPORTER_CACHE_TTL", envIntOr("O9S_DOOMSDAY_CLOCK_EXPORTER_CACHE_TTL", 86400))) * time.Second
-	scrapeInterval := time.Duration(envIntOr("DOOMSDAY_CLOCK_EXPORTER_SCRAPE_INTERVAL", envIntOr("O9S_DOOMSDAY_CLOCK_EXPORTER_SCRAPE_INTERVAL", 3600))) * time.Second
-	fetchTimeout := time.Duration(envIntOr("DOOMSDAY_CLOCK_EXPORTER_FETCH_TIMEOUT", envIntOr("O9S_DOOMSDAY_CLOCK_EXPORTER_FETCH_TIMEOUT", 30))) * time.Second
+	port := envOr("DOOMSDAY_CLOCK_EXPORTER_HTTP_PORT", "8080")
+	scrapeURL := envOr("DOOMSDAY_CLOCK_EXPORTER_SCRAPE_URL",
+		"https://thebulletin.org/wp-json/wp/v2/pages/10305")
+	cacheTTL := time.Duration(envIntOr("DOOMSDAY_CLOCK_EXPORTER_CACHE_TTL", 86400)) * time.Second
+	scrapeInterval := time.Duration(envIntOr("DOOMSDAY_CLOCK_EXPORTER_SCRAPE_INTERVAL", 3600)) * time.Second
+	fetchTimeout := time.Duration(envIntOr("DOOMSDAY_CLOCK_EXPORTER_FETCH_TIMEOUT", 30)) * time.Second
 
 	s := &scraper{
 		client:   &http.Client{Timeout: fetchTimeout},

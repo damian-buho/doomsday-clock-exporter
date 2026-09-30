@@ -6,7 +6,7 @@
 
 set -o pipefail
 
-HTTP_PORT="${DOOMSDAY_CLOCK_EXPORTER_HTTP_PORT:-${O9S_DOOMSDAY_CLOCK_EXPORTER_HTTP_PORT}}"
+HTTP_PORT="${DOOMSDAY_CLOCK_EXPORTER_HTTP_PORT}"
 
 if ! curl -sf "http://localhost:${HTTP_PORT}/health" > /dev/null; then
   b19-log bad "HEALTH.D" "$(_p "Health check failed on port %s" "${HTTP_PORT}")"

@@ -340,31 +340,6 @@ func TestEnvIntOr(t *testing.T) {
 	}
 }
 
-// TestEnvLegacyFallback pins the 0.x contract: the canonical name wins, the
-// O9S_ name still applies when the canonical one is unset, else the default.
-func TestEnvLegacyFallback(t *testing.T) {
-	const canonical = "TEST_DCE_FALLBACK_NEW"
-	const legacy = "TEST_DCE_FALLBACK_OLD"
-	read := func() string { return envOr(canonical, envOr(legacy, "default")) }
-
-	os.Unsetenv(canonical)
-	os.Unsetenv(legacy)
-	t.Cleanup(func() { os.Unsetenv(canonical); os.Unsetenv(legacy) })
-	if got := read(); got != "default" {
-		t.Errorf("unset: got=%q want=default", got)
-	}
-
-	os.Setenv(legacy, "legacy")
-	if got := read(); got != "legacy" {
-		t.Errorf("legacy: got=%q want=legacy", got)
-	}
-
-	os.Setenv(canonical, "canonical")
-	if got := read(); got != "canonical" {
-		t.Errorf("canonical: got=%q want=canonical", got)
-	}
-}
-
 func TestScraperIntegrationWithTestServer(t *testing.T) {
 	callCount := 0
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
