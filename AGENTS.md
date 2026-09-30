@@ -29,6 +29,11 @@ Custom Prometheus exporter for the Bulletin of Atomic Scientists’ Doomsday Clo
 
 Unique in damian-buho: the entire Go application is authored in-house. `main.go` is in the project root.
 
+## Build & test
+
+- Never run `go build`, `go test`, `go vet` or `gofmt` by hand — use `make build-binaries`, `make go-test`, `make go-vet`, `make go-fmt`.
+- `make syntax-is-ok` is the gate before push.
+
 ## Documentation
 
 [Project goals and objectives](@docs/goal.md)
