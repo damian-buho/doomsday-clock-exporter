@@ -8,7 +8,7 @@ pf-cli-managed: yes
 
 # Doomsday Clock Exporter
 
-Prometheus exporter for the Doomsday Clock value
+Prometheus exporter that scrapes the Bulletin of the Atomic Scientists Doomsday Clock value and exposes it as a gauge of seconds to midnight. A background scraper caches the value with a configurable TTL, serves stale values with a degradation gauge on upstream failure, and retries with exponential backoff.
 
 [![Stand with Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://damian-buho.github.io/support-ukraine/) [![Projectfile inside](https://badges.kiota.ch/static/v1?label=projectfile&message=inside&labelColor=0d0d0d&color=8c6723&style=flat-square)](https://projectfile.org) [![License](https://badges.kiota.ch/static/v1?label=license&message=MIT&color=1e5913&style=flat-square)](LICENSE) [![Commit style](https://badges.kiota.ch/static/v1?label=commits&message=conventional%20v1.0.0&color=1877aa&style=flat-square)](https://www.conventionalcommits.org/en/v1.0.0/) ![Workflow](https://badges.kiota.ch/static/v1?label=workflow&message=git-flow&color=1877aa&style=flat-square) [![Versioning](https://badges.kiota.ch/static/v1?label=versioning&message=semantic%20v2.0.0&color=1877aa&style=flat-square)](https://semver.org/) [![PRs welcome](https://badges.kiota.ch/static/v1?label=PRs&message=welcome&color=1e5913&style=flat-square)](CONTRIBUTING.md) [![Citation](https://badges.kiota.ch/static/v1?label=citation&message=cff&color=1877aa&style=flat-square)](CITATION.cff) [![REUSE compliance](https://api.reuse.software/badge/codeberg.org/damian-buho/doomsday-clock-exporter)](https://api.reuse.software/info/codeberg.org/damian-buho/doomsday-clock-exporter)
 
@@ -25,93 +25,123 @@ Prometheus exporter for the Doomsday Clock value
 - Service-specific healthcheck
 - Self-observability metrics
 
-### Inherited from B19 / Ubuntu
+It also inherits the features of Inherited from B19 / Ubuntu — see [FEATURES.md](FEATURES.md) for the full list.
 
-- Persistent APT cache across builds
-- Service process management with log routing (b19-exec)
-- Cached artifact downloads with integrity verification
-- Timed command execution with failure reporting (b19-run)
-- Run-once initialization (bootstrap.d)
-- Modular build hooks (build.d)
-- Automatic CPU count detection
-- Declarative dependency management (b19-deps)
-- Pluggable startup system (entrypoint.d)
-- Feature toggles for all subsystems
-- Built-in health monitoring (healthcheck.d)
-- Multilingual shell output (b19-i18n)
-- Image lineage tracking
-- Structured, level-filtered logging (b19-log)
-- Non-root container by default
-- Air-gapped / offline build and runtime support
-- Runtime overlay injection
-- Reproducible base image (pinned by digest)
-- Port validation
-- Unified lifecycle runner family
-- Docker secrets auto-loading
-- Interactive shell hooks
-- Graceful signal handling
-- Jinja2 configuration templates (minijinja-cli)
-- Built-in test framework (test.d)
-- Pre-installed utility tools
-- XDG Base Directory paths
+## Quick Start
 
-See [FEATURES.md](FEATURES.md) for the full list.
+Save this as `compose.yaml`:
+
+```yaml
+---
+services:
+  doomsday-clock-exporter:
+    image: docker.io/damianbuho/doomsday-clock-exporter:latest
+    ports:
+      - "8080:8080"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+```
+
+Then start it with `docker compose up --detach`.
 
 ## What this provides
 
-- **Executable** `doomsday-clock-exporter`
+- **Service** `exporter` — listens on `8080 (metrics)` — Prometheus metrics endpoint
+- **Executable** `doomsday-clock-exporter` — command `doomsday-clock-exporter`
 - **Container image** `ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest`
-- **Container image** `docker.io/damianbuho/doomsday-clock-exporter:latest`
-
-## Supported platforms
-
-- `linux/amd64`
-- `linux/arm64`
-- `linux/riscv64`
+- **Container image** `damianbuho/doomsday-clock-exporter:latest`
 
 ## Installation
 
+### Container image
+
 Pull the published container image:
 
-### Pull from GHCR
+#### Pull from GHCR — linux/amd64, linux/arm64, linux/riscv64
 
 ```sh
 docker pull ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest
 ```
 
-### Pull from DockerHub
+#### Pull from DockerHub — linux/amd64
 
 ```sh
-docker pull docker.io/damianbuho/doomsday-clock-exporter:latest
+docker pull damianbuho/doomsday-clock-exporter:latest
 ```
 
 Stable releases also publish `X.Y.Z`, `X.Y` and `X` tags — pull the precision you want to pin.
 
 If the registries above are unreachable, pull from the origin instead:
 
-### Pull from Kiota
+#### Pull from Kiota — linux/amd64
 
 ```sh
 docker pull kiota.ch/damian-buho/doomsday-clock-exporter:latest
 ```
 
-## Usage
+### Prebuilt binary
 
-Bring the stack up locally:
+Download the prebuilt binary for your platform from the latest GitHub release:
+
+#### Download for linux/amd64
 
 ```sh
-make dc-up
-make dc-logs
-make dc-down
+curl --fail --location --output doomsday-clock-exporter https://github.com/damian-buho/doomsday-clock-exporter/releases/latest/download/doomsday-clock-exporter-linux-amd64 && chmod +x doomsday-clock-exporter
+./doomsday-clock-exporter --help
 ```
 
-Then run it:
+#### Download for linux/arm64
 
 ```sh
-doomsday-clock-exporter --help
+curl --fail --location --output doomsday-clock-exporter https://github.com/damian-buho/doomsday-clock-exporter/releases/latest/download/doomsday-clock-exporter-linux-arm64 && chmod +x doomsday-clock-exporter
+./doomsday-clock-exporter --help
+```
+
+#### Download for linux/riscv64
+
+```sh
+curl --fail --location --output doomsday-clock-exporter https://github.com/damian-buho/doomsday-clock-exporter/releases/latest/download/doomsday-clock-exporter-linux-riscv64 && chmod +x doomsday-clock-exporter
+./doomsday-clock-exporter --help
+```
+
+## Usage
+
+Run the service in the background, publishing its ports:
+
+### From GHCR
+
+```sh
+docker run --detach --publish 8080:8080 ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest
+```
+
+### From DockerHub
+
+```sh
+docker run --detach --publish 8080:8080 damianbuho/doomsday-clock-exporter:latest
+```
+
+Then check that it answers:
+
+```sh
+curl http://localhost:8080/metrics
 ```
 
 ## Building
+
+Clone the repository with its submodules:
+
+```sh
+git clone --recurse-submodules https://codeberg.org/damian-buho/doomsday-clock-exporter doomsday-clock-exporter && cd doomsday-clock-exporter
+```
+
+Build the container image locally:
+
+```sh
+make container-build
+```
+
+- [Makefile reference](docs/how-to/MAKEFILE.md)
 
 Run `make` with no arguments for the default target; run `make help` to list every target.
 

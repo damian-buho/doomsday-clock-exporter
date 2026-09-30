@@ -10,7 +10,7 @@ pf-cli-managed: yes
 
 # Doomsday Clock Exporter
 
-Exportador de Prometheus para el valor del Reloj del Juicio Final
+Exportador de Prometheus que extrae el valor del Reloj del Juicio Final del Bulletin of the Atomic Scientists y lo expone como un indicador de segundos hasta la medianoche. Un raspador en segundo plano almacena el valor en caché con un TTL configurable, sirve valores obsoletos con un indicador de degradación ante fallos del origen, y reintenta con retroceso exponencial.
 
 [![Stand with Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://damian-buho.github.io/support-ukraine/) [![Projectfile inside](https://badges.kiota.ch/static/v1?label=projectfile&message=inside&labelColor=0d0d0d&color=8c6723&style=flat-square)](https://projectfile.org) [![License](https://badges.kiota.ch/static/v1?label=license&message=MIT&color=1e5913&style=flat-square)](LICENSE) [![Commit style](https://badges.kiota.ch/static/v1?label=commits&message=conventional%20v1.0.0&color=1877aa&style=flat-square)](https://www.conventionalcommits.org/es/v1.0.0/) ![Workflow](https://badges.kiota.ch/static/v1?label=workflow&message=git-flow&color=1877aa&style=flat-square) [![Versioning](https://badges.kiota.ch/static/v1?label=versioning&message=semantic%20v2.0.0&color=1877aa&style=flat-square)](https://semver.org/lang/es/) [![PRs welcome](https://badges.kiota.ch/static/v1?label=PRs&message=welcome&color=1e5913&style=flat-square)](CONTRIBUTING.md) [![Citation](https://badges.kiota.ch/static/v1?label=citation&message=cff&color=1877aa&style=flat-square)](CITATION.cff) [![REUSE compliance](https://api.reuse.software/badge/codeberg.org/damian-buho/doomsday-clock-exporter)](https://api.reuse.software/info/codeberg.org/damian-buho/doomsday-clock-exporter)
 
@@ -27,93 +27,123 @@ Exportador de Prometheus para el valor del Reloj del Juicio Final
 - Comprobación de estado específica del servicio
 - Métricas de autoobservabilidad
 
-### Heredado de B19 / Ubuntu
+También hereda las características de Heredado de B19 / Ubuntu; consulta [FEATURES.md](FEATURES.md) para ver la lista completa.
 
-- Caché APT persistente entre compilaciones
-- Gestión de procesos de servicio con enrutado de logs (b19-exec)
-- Descargas de artefactos con caché y verificación de integridad (b19-fetch)
-- Ejecución de comandos temporizada con informe de fallos (b19-run)
-- Inicialización de una sola vez (bootstrap.d)
-- Hooks de compilación modulares (build.d)
-- Detección automática del número de CPUs (NUMPROCS)
-- Gestión declarativa de dependencias (b19-deps)
-- Sistema de arranque conectable (entrypoint.d)
-- Conmutadores de funcionalidades para todos los subsistemas
-- Monitorización de estado integrada (healthcheck.d)
-- Salida de shell multilingüe (b19-i18n)
-- Seguimiento del linaje de la imagen
-- Logging estructurado con filtro por nivel (b19-log)
-- Contenedor sin privilegios de root por defecto
-- Soporte de compilación y runtime aislados de internet (air-gapped/offline)
-- Inyección de overlays en runtime
-- Imagen base reproducible (fijada por digest)
-- Validación de puertos
-- Familia unificada de runners del ciclo de vida
-- Autocarga de secretos de Docker (secrets)
-- Hooks de shell interactivo (shell.d)
-- Gestión elegante de señales
-- Plantillas de configuración Jinja2 (minijinja-cli)
-- Framework de tests integrado (test.d)
-- Herramientas de utilidad preinstaladas
-- Rutas XDG Base Directory
+## Inicio rápido
 
-Consulta [FEATURES.md](FEATURES.md) para ver la lista completa.
+Guarda esto como `compose.yaml`:
+
+```yaml
+---
+services:
+  doomsday-clock-exporter:
+    image: docker.io/damianbuho/doomsday-clock-exporter:latest
+    ports:
+      - "8080:8080"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+```
+
+Después, arráncalo con `docker compose up --detach`.
 
 ## Qué entrega este proyecto
 
-- **Ejecutable** `doomsday-clock-exporter`
+- **Servicio** `exporter` — escucha en `8080 (metrics)` — Prometheus metrics endpoint
+- **Ejecutable** `doomsday-clock-exporter` — comando `doomsday-clock-exporter`
 - **Imagen de contenedor** `ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest`
-- **Imagen de contenedor** `docker.io/damianbuho/doomsday-clock-exporter:latest`
-
-## Plataformas admitidas
-
-- `linux/amd64`
-- `linux/arm64`
-- `linux/riscv64`
+- **Imagen de contenedor** `damianbuho/doomsday-clock-exporter:latest`
 
 ## Instalación
 
+### Imagen de contenedor
+
 Descarga la imagen de contenedor publicada:
 
-### Descargar de GHCR
+#### Descargar de GHCR — linux/amd64, linux/arm64, linux/riscv64
 
 ```sh
 docker pull ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest
 ```
 
-### Descargar de DockerHub
+#### Descargar de DockerHub — linux/amd64
 
 ```sh
-docker pull docker.io/damianbuho/doomsday-clock-exporter:latest
+docker pull damianbuho/doomsday-clock-exporter:latest
 ```
 
 Las versiones estables también publican las etiquetas `X.Y.Z`, `X.Y` y `X`: descarga el nivel de precisión que quieras fijar.
 
 Si los registros anteriores no están disponibles, descarga desde el origen:
 
-### Descargar de Kiota
+#### Descargar de Kiota — linux/amd64
 
 ```sh
 docker pull kiota.ch/damian-buho/doomsday-clock-exporter:latest
 ```
 
-## Uso
+### Binario precompilado
 
-Levanta la pila localmente:
+Descarga el binario precompilado para tu plataforma desde la última versión en GitHub:
+
+#### Descargar para linux/amd64
 
 ```sh
-make dc-up
-make dc-logs
-make dc-down
+curl --fail --location --output doomsday-clock-exporter https://github.com/damian-buho/doomsday-clock-exporter/releases/latest/download/doomsday-clock-exporter-linux-amd64 && chmod +x doomsday-clock-exporter
+./doomsday-clock-exporter --help
 ```
 
-Después, ejecútalo:
+#### Descargar para linux/arm64
 
 ```sh
-doomsday-clock-exporter --help
+curl --fail --location --output doomsday-clock-exporter https://github.com/damian-buho/doomsday-clock-exporter/releases/latest/download/doomsday-clock-exporter-linux-arm64 && chmod +x doomsday-clock-exporter
+./doomsday-clock-exporter --help
+```
+
+#### Descargar para linux/riscv64
+
+```sh
+curl --fail --location --output doomsday-clock-exporter https://github.com/damian-buho/doomsday-clock-exporter/releases/latest/download/doomsday-clock-exporter-linux-riscv64 && chmod +x doomsday-clock-exporter
+./doomsday-clock-exporter --help
+```
+
+## Uso
+
+Ejecuta el servicio en segundo plano, publicando sus puertos:
+
+### Desde GHCR
+
+```sh
+docker run --detach --publish 8080:8080 ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest
+```
+
+### Desde DockerHub
+
+```sh
+docker run --detach --publish 8080:8080 damianbuho/doomsday-clock-exporter:latest
+```
+
+Después, comprueba que responde:
+
+```sh
+curl http://localhost:8080/metrics
 ```
 
 ## Compilación
+
+Clona el repositorio con sus submódulos:
+
+```sh
+git clone --recurse-submodules https://codeberg.org/damian-buho/doomsday-clock-exporter doomsday-clock-exporter && cd doomsday-clock-exporter
+```
+
+Construye la imagen de contenedor en local:
+
+```sh
+make container-build
+```
+
+- [Referencia del Makefile](../how-to/MAKEFILE.md)
 
 Ejecuta `make` sin argumentos para el destino predeterminado; ejecuta `make help` para listar todos los destinos.
 
@@ -121,10 +151,10 @@ Para el bucle de desarrollo local, `make dev-container` levanta el dev-container
 
 Puntos de entrada de la canalización:
 
-- `make analyze` — Run the heavy analysis sweep (mutation testing, benchmarks)
-- `make audited` — Re-scan the pinned dependencies and published artifacts for new vulnerabilities
-- `make check-outdated` — Report every pinned dependency that lags upstream
-- `make ready-to-publish` — Run the pseudo-CI pipeline locally — build, test and scan, without publishing
+- `make analyze` — Ejecuta el análisis pesado (pruebas de mutación, benchmarks)
+- `make audited` — Vuelve a escanear las dependencias fijadas y los artefactos publicados en busca de vulnerabilidades nuevas
+- `make check-outdated` — Informa de cada dependencia fijada que va por detrás de su versión upstream
+- `make ready-to-publish` — Ejecuta localmente el pipeline pseudo-CI — compila, prueba y escanea, sin publicar
 
 ## Políticas
 

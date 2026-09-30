@@ -10,7 +10,7 @@ pf-cli-managed: yes
 
 # Doomsday Clock Exporter
 
-Експортер Prometheus для значення Годинника Судного дня
+Експортер Prometheus, який збирає значення Годинника Судного дня від Bulletin of the Atomic Scientists і надає його як gauge секунд до опівночі. Фоновий збирач кешує значення з налаштовуваним TTL, віддає застарілі значення з gauge деградації при відмові джерела та повторює спроби з експоненційним відкатом.
 
 [![Stand with Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://damian-buho.github.io/support-ukraine/) [![Projectfile inside](https://badges.kiota.ch/static/v1?label=projectfile&message=inside&labelColor=0d0d0d&color=8c6723&style=flat-square)](https://projectfile.org) [![License](https://badges.kiota.ch/static/v1?label=license&message=MIT&color=1e5913&style=flat-square)](LICENSE) [![Commit style](https://badges.kiota.ch/static/v1?label=commits&message=conventional%20v1.0.0&color=1877aa&style=flat-square)](https://www.conventionalcommits.org/uk/v1.0.0/) ![Workflow](https://badges.kiota.ch/static/v1?label=workflow&message=git-flow&color=1877aa&style=flat-square) [![Versioning](https://badges.kiota.ch/static/v1?label=versioning&message=semantic%20v2.0.0&color=1877aa&style=flat-square)](https://semver.org/lang/uk/) [![PRs welcome](https://badges.kiota.ch/static/v1?label=PRs&message=welcome&color=1e5913&style=flat-square)](CONTRIBUTING.md) [![Citation](https://badges.kiota.ch/static/v1?label=citation&message=cff&color=1877aa&style=flat-square)](CITATION.cff) [![REUSE compliance](https://api.reuse.software/badge/codeberg.org/damian-buho/doomsday-clock-exporter)](https://api.reuse.software/info/codeberg.org/damian-buho/doomsday-clock-exporter)
 
@@ -27,93 +27,123 @@ pf-cli-managed: yes
 - Перевірка стану, специфічна для сервісу
 - Метрики самоспостереження
 
-### Успадковано від B19 / Ubuntu
+Також успадковує можливості Успадковано від B19 / Ubuntu — повний перелік див. у [FEATURES.md](FEATURES.md).
 
-- Постійний APT-кеш між збираннями
-- Керування службовими процесами зі спрямуванням журналів (b19-exec)
-- Кешовані завантаження артефактів із перевіркою цілісності (b19-fetch)
-- Вимірюване виконання команд зі звітуванням про збої (b19-run)
-- Одноразова ініціалізація (bootstrap.d)
-- Модульні хуки збирання (build.d)
-- Автоматичне визначення кількості CPU (NUMPROCS)
-- Декларативне керування залежностями (b19-deps)
-- Підключована система запуску (entrypoint.d)
-- Перемикачі функцій для всіх підсистем
-- Вбудований моніторинг стану (healthcheck.d)
-- Багатомовний вивід shell (b19-i18n)
-- Відстеження лініжу образу
-- Структуроване журналування з фільтром за рівнем (b19-log)
-- Контейнер без прав root за замовчуванням
-- Підтримка ізольованих від інтернету (air-gapped/offline) збирання й виконання
-- Ін’єкція оверлеїв під час виконання
-- Відтворюваний базовий образ (зафіксований за digest)
-- Перевірка портів
-- Уніфіковане сімейство ранерів життєвого циклу
-- Автозавантаження Docker-секретів (secrets)
-- Хуки інтерактивної shell (shell.d)
-- Плавна обробка сигналів
-- Шаблони конфігурації Jinja2 (minijinja-cli)
-- Вбудований тестовий фреймворк (test.d)
-- Попередньо встановлені службові інструменти
-- Шляхи XDG Base Directory
+## Швидкий старт
 
-Див. [FEATURES.md](FEATURES.md), щоб переглянути повний перелік.
+Збережіть це як `compose.yaml`:
+
+```yaml
+---
+services:
+  doomsday-clock-exporter:
+    image: docker.io/damianbuho/doomsday-clock-exporter:latest
+    ports:
+      - "8080:8080"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+```
+
+Потім запустіть його командою `docker compose up --detach`.
 
 ## Що надає цей проєкт
 
-- **Виконуваний файл** `doomsday-clock-exporter`
+- **Служба** `exporter` — слухає на `8080 (metrics)` — Prometheus metrics endpoint
+- **Виконуваний файл** `doomsday-clock-exporter` — команда `doomsday-clock-exporter`
 - **Образ контейнера** `ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest`
-- **Образ контейнера** `docker.io/damianbuho/doomsday-clock-exporter:latest`
-
-## Підтримувані платформи
-
-- `linux/amd64`
-- `linux/arm64`
-- `linux/riscv64`
+- **Образ контейнера** `damianbuho/doomsday-clock-exporter:latest`
 
 ## Встановлення
 
+### Образ контейнера
+
 Завантажте опублікований образ контейнера:
 
-### Завантажити з GHCR
+#### Завантажити з GHCR — linux/amd64, linux/arm64, linux/riscv64
 
 ```sh
 docker pull ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest
 ```
 
-### Завантажити з DockerHub
+#### Завантажити з DockerHub — linux/amd64
 
 ```sh
-docker pull docker.io/damianbuho/doomsday-clock-exporter:latest
+docker pull damianbuho/doomsday-clock-exporter:latest
 ```
 
 Стабільні випуски також публікують теґи `X.Y.Z`, `X.Y` і `X` — завантажте той рівень точності, який хочете зафіксувати.
 
 Якщо наведені вище реєстри недоступні, завантажте з джерела:
 
-### Завантажити з Kiota
+#### Завантажити з Kiota — linux/amd64
 
 ```sh
 docker pull kiota.ch/damian-buho/doomsday-clock-exporter:latest
 ```
 
-## Використання
+### Готовий бінарний файл
 
-Запустіть стек локально:
+Завантажте готовий бінарний файл для своєї платформи з останнього випуску на GitHub:
+
+#### Завантажити для linux/amd64
 
 ```sh
-make dc-up
-make dc-logs
-make dc-down
+curl --fail --location --output doomsday-clock-exporter https://github.com/damian-buho/doomsday-clock-exporter/releases/latest/download/doomsday-clock-exporter-linux-amd64 && chmod +x doomsday-clock-exporter
+./doomsday-clock-exporter --help
 ```
 
-Потім запустіть його:
+#### Завантажити для linux/arm64
 
 ```sh
-doomsday-clock-exporter --help
+curl --fail --location --output doomsday-clock-exporter https://github.com/damian-buho/doomsday-clock-exporter/releases/latest/download/doomsday-clock-exporter-linux-arm64 && chmod +x doomsday-clock-exporter
+./doomsday-clock-exporter --help
+```
+
+#### Завантажити для linux/riscv64
+
+```sh
+curl --fail --location --output doomsday-clock-exporter https://github.com/damian-buho/doomsday-clock-exporter/releases/latest/download/doomsday-clock-exporter-linux-riscv64 && chmod +x doomsday-clock-exporter
+./doomsday-clock-exporter --help
+```
+
+## Використання
+
+Запустіть сервіс у фоновому режимі, опублікувавши його порти:
+
+### З GHCR
+
+```sh
+docker run --detach --publish 8080:8080 ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest
+```
+
+### З DockerHub
+
+```sh
+docker run --detach --publish 8080:8080 damianbuho/doomsday-clock-exporter:latest
+```
+
+Потім перевірте, що він відповідає:
+
+```sh
+curl http://localhost:8080/metrics
 ```
 
 ## Збирання
+
+Клонуйте репозиторій разом із підмодулями:
+
+```sh
+git clone --recurse-submodules https://codeberg.org/damian-buho/doomsday-clock-exporter doomsday-clock-exporter && cd doomsday-clock-exporter
+```
+
+Зберіть образ контейнера локально:
+
+```sh
+make container-build
+```
+
+- [Довідник із Makefile](../how-to/MAKEFILE.md)
 
 Виконайте `make` без аргументів для типової цілі; виконайте `make help`, щоб переглянути всі цілі.
 
@@ -121,10 +151,10 @@ doomsday-clock-exporter --help
 
 Точки входу конвеєра:
 
-- `make analyze` — Run the heavy analysis sweep (mutation testing, benchmarks)
-- `make audited` — Re-scan the pinned dependencies and published artifacts for new vulnerabilities
-- `make check-outdated` — Report every pinned dependency that lags upstream
-- `make ready-to-publish` — Run the pseudo-CI pipeline locally — build, test and scan, without publishing
+- `make analyze` — Запускає важкий аналіз (мутаційне тестування, бенчмарки)
+- `make audited` — Повторно сканує закріплені залежності й опубліковані артефакти на нові вразливості
+- `make check-outdated` — Звітує про кожну закріплену залежність, що відстає від upstream
+- `make ready-to-publish` — Запускає псевдо-CI локально — збирає, тестує й сканує без публікації
 
 ## Політики
 
