@@ -51,7 +51,7 @@ services:
 
 - **Служба** `exporter` — слухає на `8080 (metrics)` — Prometheus metrics endpoint
 - **Виконуваний файл** `doomsday-clock-exporter` — команда `doomsday-clock-exporter`
-- **Образ контейнера** `ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest`
+- **Образ контейнера** `ghcr.io/damian-buho/doomsday-clock-exporter:latest`
 - **Образ контейнера** `damianbuho/doomsday-clock-exporter:latest`
 
 ## Встановлення
@@ -63,7 +63,7 @@ services:
 #### Завантажити з GHCR — linux/amd64, linux/arm64, linux/riscv64
 
 ```sh
-docker pull ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest
+docker pull ghcr.io/damian-buho/doomsday-clock-exporter:latest
 ```
 
 #### Завантажити з DockerHub — linux/amd64
@@ -100,7 +100,7 @@ curl --fail --location --output doomsday-clock-exporter https://github.com/damia
 ### З GHCR
 
 ```sh
-docker run --detach --publish 8080:8080/tcp ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest
+docker run --detach --publish 8080:8080/tcp ghcr.io/damian-buho/doomsday-clock-exporter:latest
 ```
 
 ### З DockerHub

@@ -49,7 +49,7 @@ Then start it with `docker compose up --detach`.
 
 - **Service** `exporter` — listens on `8080 (metrics)` — Prometheus metrics endpoint
 - **Executable** `doomsday-clock-exporter` — command `doomsday-clock-exporter`
-- **Container image** `ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest`
+- **Container image** `ghcr.io/damian-buho/doomsday-clock-exporter:latest`
 - **Container image** `damianbuho/doomsday-clock-exporter:latest`
 
 ## Installation
@@ -61,7 +61,7 @@ Pull the published container image:
 #### Pull from GHCR — linux/amd64, linux/arm64, linux/riscv64
 
 ```sh
-docker pull ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest
+docker pull ghcr.io/damian-buho/doomsday-clock-exporter:latest
 ```
 
 #### Pull from DockerHub — linux/amd64
@@ -98,7 +98,7 @@ Run the service in the background, publishing its ports:
 ### From GHCR
 
 ```sh
-docker run --detach --publish 8080:8080/tcp ghcr.io/damian-buho/damian-buho/doomsday-clock-exporter:latest
+docker run --detach --publish 8080:8080/tcp ghcr.io/damian-buho/doomsday-clock-exporter:latest
 ```
 
 ### From DockerHub
