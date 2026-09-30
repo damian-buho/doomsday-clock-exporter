@@ -306,7 +306,7 @@ func TestScraperRegistration(t *testing.T) {
 }
 
 func TestEnvOr(t *testing.T) {
-	const key = "TEST_O9S_DCE_ENVOR"
+	const key = "TEST_DCE_ENVOR"
 
 	os.Unsetenv(key)
 	if got := envOr(key, "fallback"); got != "fallback" {
@@ -321,7 +321,7 @@ func TestEnvOr(t *testing.T) {
 }
 
 func TestEnvIntOr(t *testing.T) {
-	const key = "TEST_O9S_DCE_ENVINTOR"
+	const key = "TEST_DCE_ENVINTOR"
 
 	os.Unsetenv(key)
 	if got := envIntOr(key, 42); got != 42 {
@@ -337,6 +337,31 @@ func TestEnvIntOr(t *testing.T) {
 	os.Setenv(key, "notanumber")
 	if got := envIntOr(key, 42); got != 42 {
 		t.Errorf("invalid: got=%d want=42", got)
+	}
+}
+
+// TestEnvLegacyFallback pins the 0.x contract: the canonical name wins, the
+// O9S_ name still applies when the canonical one is unset, else the default.
+func TestEnvLegacyFallback(t *testing.T) {
+	const canonical = "TEST_DCE_FALLBACK_NEW"
+	const legacy = "TEST_DCE_FALLBACK_OLD"
+	read := func() string { return envOr(canonical, envOr(legacy, "default")) }
+
+	os.Unsetenv(canonical)
+	os.Unsetenv(legacy)
+	t.Cleanup(func() { os.Unsetenv(canonical); os.Unsetenv(legacy) })
+	if got := read(); got != "default" {
+		t.Errorf("unset: got=%q want=default", got)
+	}
+
+	os.Setenv(legacy, "legacy")
+	if got := read(); got != "legacy" {
+		t.Errorf("legacy: got=%q want=legacy", got)
+	}
+
+	os.Setenv(canonical, "canonical")
+	if got := read(); got != "canonical" {
+		t.Errorf("canonical: got=%q want=canonical", got)
 	}
 }
 

@@ -19,15 +19,15 @@ Custom Prometheus exporter for the Bulletin of Atomic Scientists’ Doomsday Clo
 
 ## ENV
 
-- `O9S_DOOMSDAY_CLOCK_EXPORTER_HTTP_PORT=8080`
-- `O9S_DOOMSDAY_CLOCK_EXPORTER_CACHE_TTL=86400` (24h)
-- `O9S_DOOMSDAY_CLOCK_EXPORTER_SCRAPE_INTERVAL=3600` (1h)
-- `O9S_DOOMSDAY_CLOCK_EXPORTER_FETCH_TIMEOUT=30` (seconds)
-- `O9S_DOOMSDAY_CLOCK_EXPORTER_SCRAPE_URL=https://thebulletin.org/wp-json/wp/v2/pages/10305`
+- `DOOMSDAY_CLOCK_EXPORTER_HTTP_PORT=8080`
+- `DOOMSDAY_CLOCK_EXPORTER_CACHE_TTL=86400` (24h)
+- `DOOMSDAY_CLOCK_EXPORTER_SCRAPE_INTERVAL=3600` (1h)
+- `DOOMSDAY_CLOCK_EXPORTER_FETCH_TIMEOUT=30` (seconds)
+- `DOOMSDAY_CLOCK_EXPORTER_SCRAPE_URL=https://thebulletin.org/wp-json/wp/v2/pages/10305`
 
 ## Note
 
-Unique in o9s: the entire Go application is authored in-house. `main.go` is in the project root.
+Unique in damian-buho: the entire Go application is authored in-house. `main.go` is in the project root.
 
 ## Documentation
 

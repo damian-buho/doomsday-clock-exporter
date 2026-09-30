@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: doomsday-clock-exporter 1.1.5\n"
-"Report-Msgid-Bugs-To: https://codeberg.org/o9s/doomsday-clock-exporter/"
+"Report-Msgid-Bugs-To: https://codeberg.org/damian-buho/doomsday-clock-exporter/"
 "issues\n"
 "POT-Creation-Date: 2026-09-07 03:47+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"

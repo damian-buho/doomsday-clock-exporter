@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-module kiota.ch/o9s/doomsday-clock-exporter
+module github.com/damian-buho/doomsday-clock-exporter
 
 go 1.26.7
 
