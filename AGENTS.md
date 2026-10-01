@@ -13,7 +13,7 @@ Custom Prometheus exporter for the Bulletin of Atomic Scientists’ Doomsday Clo
 ## Key facts
 
 - Builder: `b19/go` (source code lives in the project directory — `main.go`, `go.mod`, `go.sum`)
-- Final Base: `b19/ubuntu/resolute`
+- Final Base: `b19/ubuntu:resolute`
 - Arch: amd64 only
 - **No upstream version pin** — local source, versioned via the project’s own Git
 
