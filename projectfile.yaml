@@ -121,6 +121,7 @@ org:
         command: doomsday-clock-exporter
         kind: binary
         path: dist/doomsday-clock-exporter
+        host-asset: doomsday-clock-exporter-linux-$(uname -m)
     ci:
       nodes:
         binaries-are-built:
