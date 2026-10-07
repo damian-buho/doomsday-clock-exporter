@@ -87,7 +87,9 @@ docker pull kiota.ch/damian-buho/doomsday-clock-exporter:latest
 Завантажте готовий бінарний файл для своєї платформи з випусків на GitHub:
 
 ```sh
-mkdir -p ~/.local/bin && curl --fail --location --output ~/.local/bin/doomsday-clock-exporter https://github.com/damian-buho/doomsday-clock-exporter/releases/latest/download/doomsday-clock-exporter-linux-$(uname -m) && chmod +x ~/.local/bin/doomsday-clock-exporter
+mkdir -p ~/.local/bin
+curl --fail --location --output ~/.local/bin/doomsday-clock-exporter https://github.com/damian-buho/doomsday-clock-exporter/releases/latest/download/doomsday-clock-exporter-linux-$(uname -m)
+chmod +x ~/.local/bin/doomsday-clock-exporter
 ~/.local/bin/doomsday-clock-exporter --help
 ```
 
