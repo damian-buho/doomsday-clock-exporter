@@ -442,7 +442,7 @@ jobs:
   publish-image:
     runs-on: docker
     needs: ["image-is-built", "ready-to-publish"]
-    if: (startsWith(github.ref, 'refs/heads/') && github.ref != 'refs/heads/main') || (startsWith(github.ref, 'refs/tags/'))
+    if: (startsWith(github.ref, 'refs/heads/')) || (startsWith(github.ref, 'refs/tags/'))
     concurrency:
       group: publish-${{ github.repository }}-${{ toJSON(matrix) }}
       cancel-in-progress: false
@@ -496,6 +496,9 @@ jobs:
           # one `latest-<branch>` tag on the primary sink, so a branch build is testable
           # without a tag and without moving anything a consumer floats on.
           preview: ${{ github.ref_type == 'branch' && github.ref_name || '' }}
+          # The trunk branch names, so the action can tell a trunk push (`edge`) from a
+          # feature-branch one (`latest-<branch>`) — `preview` above carries both.
+          primary: main
           # Head templates per build kind, as org.projectfile.image.heads declares them
           heads: |
             release ${version} ${major}.${minor} ${major} latest
