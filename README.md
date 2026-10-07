@@ -82,11 +82,11 @@ docker pull kiota.ch/damian-buho/doomsday-clock-exporter:latest
 
 ### Prebuilt binary
 
-Download the prebuilt binary for your platform from the latest GitHub release:
+Download the prebuilt binary for your platform from GitHub Releases:
 
 ```sh
-curl --fail --location --output doomsday-clock-exporter https://github.com/damian-buho/doomsday-clock-exporter/releases/latest/download/doomsday-clock-exporter-$(uname -s | tr A-Z a-z)-$(uname -m | sed -e s/x86_64/amd64/ -e s/aarch64/arm64/) && chmod +x doomsday-clock-exporter
-./doomsday-clock-exporter --help
+mkdir -p ~/.local/bin && curl --fail --location --output ~/.local/bin/doomsday-clock-exporter https://github.com/damian-buho/doomsday-clock-exporter/releases/latest/download/doomsday-clock-exporter-$(uname -s | tr A-Z a-z)-$(uname -m) && chmod +x ~/.local/bin/doomsday-clock-exporter
+~/.local/bin/doomsday-clock-exporter --help
 ```
 
 Published for: `linux/amd64`, `linux/arm64`, `linux/riscv64`
