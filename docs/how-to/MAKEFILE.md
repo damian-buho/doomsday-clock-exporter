@@ -1311,6 +1311,30 @@ Cross-compile the release binaries for the OS/arch cell
 
 > Image: GO_TOOL_IMAGE
 
+### `cosign-preflight`
+
+Prove the cosign signing key signs and verifies before anything is pushed
+
+`auto-cosign preflight`
+
+> Image: D9T_GO_TOOLS_IMAGE
+
+### `cosign-sbom-attest`
+
+Attest the SBOM to the published image with cosign
+
+`auto-cosign attest`
+
+> Image: D9T_GO_TOOLS_IMAGE
+
+### `cosign-sign`
+
+Sign the published image with cosign
+
+`auto-cosign sign`
+
+> Image: D9T_GO_TOOLS_IMAGE
+
 ### `install-binary`
 
 Build the host-native binary and install it into ~/.local/bin
@@ -1318,6 +1342,14 @@ Build the host-native binary and install it into ~/.local/bin
 `.scripts/install-binary.sh`
 
 > Image: host runner
+
+### `syft-sbom-image`
+
+Generate an SBOM of the live built image (syft)
+
+`auto-syft image $(M6E_IMAGE_FULLNAME)`
+
+> Image: D9T_GO_TOOLS_IMAGE
 
 ## Release
 
