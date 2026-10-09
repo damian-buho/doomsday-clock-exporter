@@ -146,13 +146,6 @@ org:
                 - riscv64
               GOOS:
                 - linux
-        # Publish the mutable `edge` tag from every trunk push
-        publish-image:
-          when:
-            events:
-              - tag
-              - preview
-              - primary
     conventions:
       fragments:
         parents:
