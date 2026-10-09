@@ -60,8 +60,7 @@ ARG M6E_NEAR_CACHE_HOST=""
 ARG M6E_PROJECT
 ARG TARGETARCH
 
-ENV M6E_VERSION=${M6E_VERSION}                            \
-    DOOMSDAY_CLOCK_EXPORTER_CACHE_TTL=86400           \
+ENV DOOMSDAY_CLOCK_EXPORTER_CACHE_TTL=86400           \
     DOOMSDAY_CLOCK_EXPORTER_SCRAPE_INTERVAL=3600      \
     DOOMSDAY_CLOCK_EXPORTER_FETCH_TIMEOUT=30          \
     DOOMSDAY_CLOCK_EXPORTER_HTTP_PORT=8080            \
@@ -91,6 +90,7 @@ RUN --mount=type=bind,from=fetch,source=.,target=/fetch                         
     --mount=type=cache,target=${B19_DOWNLOAD_PATH},sharing=shared,uid=${B19_UID},gid=${B19_GID}     \
     --mount=type=tmpfs,target=${B19_TEMP_PATH}                                                      \
     build-stage user
+ENV M6E_VERSION=${M6E_VERSION}
 
 # ENTRYPOINT ["entrypoint.d"] is inherited
 # HEALTHCHECK CMD ["healthcheck.d"] is inherited
