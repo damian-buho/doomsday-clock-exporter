@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -506,4 +507,20 @@ func metricValues(mfs []*io_prometheus_client.MetricFamily) map[string]float64 {
 		}
 	}
 	return out
+}
+
+func TestLogLevel(t *testing.T) {
+	cases := map[string]slog.Level{
+		"":      slog.LevelWarn,
+		"bogus": slog.LevelWarn,
+		"warn":  slog.LevelWarn,
+		"error": slog.LevelError,
+		"info":  slog.LevelInfo,
+		"debug": slog.LevelDebug,
+	}
+	for in, want := range cases {
+		if got := logLevel(in); got != want {
+			t.Errorf("logLevel(%q) = %v, want %v", in, got, want)
+		}
+	}
 }

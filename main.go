@@ -225,6 +225,8 @@ func realMain() int {
 		return 0
 	}
 
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: logLevel(os.Getenv("B19_VERBOSITY"))})))
+
 	// shutdownCtx is cancelled on SIGINT/SIGTERM so the HTTP server and the
 	// background scraper unwind together instead of being killed mid-request.
 	shutdownCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -297,6 +299,19 @@ func realMain() int {
 		}
 	}
 	return 0
+}
+
+// logLevel maps B19_VERBOSITY to a slog level; unset or unknown is warn.
+func logLevel(verbosity string) slog.Level {
+	switch verbosity {
+	case "debug":
+		return slog.LevelDebug
+	case "info":
+		return slog.LevelInfo
+	case "error":
+		return slog.LevelError
+	}
+	return slog.LevelWarn
 }
 
 func envOr(key, fallback string) string {
