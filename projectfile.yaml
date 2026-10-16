@@ -129,23 +129,9 @@ org:
     ci:
       nodes:
         binaries-are-built:
-          matrix:
-            axes:
-              GOARCH:
-                - amd64
-                - arm64
-                - riscv64
-              GOOS:
-                - linux
+          matrix: {artifact: go-binary}
         gsa:
-          matrix:
-            axes:
-              GOARCH:
-                - amd64
-                - arm64
-                - riscv64
-              GOOS:
-                - linux
+          matrix: {artifact: go-binary}
     conventions:
       fragments:
         parents:
