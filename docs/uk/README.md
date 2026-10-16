@@ -95,6 +95,8 @@ chmod +x ~/.local/bin/doomsday-clock-exporter
 
 Опубліковано для: `linux/amd64`, `linux/arm64`, `linux/riscv64`
 
+Щоб видалити, зітріть цей єдиний файл: `rm ~/.local/bin/doomsday-clock-exporter`.
+
 ## Використання
 
 Запустіть сервіс у фоновому режимі, опублікувавши його порти:

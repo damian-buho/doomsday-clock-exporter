@@ -95,6 +95,8 @@ chmod +x ~/.local/bin/doomsday-clock-exporter
 
 Publicado para: `linux/amd64`, `linux/arm64`, `linux/riscv64`
 
+Para desinstalarlo, borra ese único archivo: `rm ~/.local/bin/doomsday-clock-exporter`.
+
 ## Uso
 
 Ejecuta el servicio en segundo plano, publicando sus puertos:

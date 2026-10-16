@@ -93,6 +93,8 @@ chmod +x ~/.local/bin/doomsday-clock-exporter
 
 Published for: `linux/amd64`, `linux/arm64`, `linux/riscv64`
 
+To uninstall, delete that one file: `rm ~/.local/bin/doomsday-clock-exporter`.
+
 ## Usage
 
 Run the service in the background, publishing its ports:
