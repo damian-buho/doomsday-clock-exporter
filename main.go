@@ -32,6 +32,14 @@ const (
 	metricCacheStale        = "doomsdayclock_cache_stale"
 )
 
+// Timing contract of the exporter: retry backoff bounds and the graceful
+// shutdown drain window. Pinned by tests so a change is a deliberate one.
+const (
+	initialBackoff = 2 * time.Second
+	maxBackoff     = 60 * time.Second
+	drainTimeout   = 10 * time.Second
+)
+
 var version = "unknown"
 
 var (
@@ -83,18 +91,40 @@ func (c *cache) load() (float64, time.Time, bool) {
 }
 
 // scraper fetches the Doomsday Clock value in the background and caches it.
+// initialBackoff and maxBackoff are fields so the retry cadence can be
+// exercised at test speed instead of at wall-clock seconds.
 type scraper struct {
-	client   *http.Client
-	url      string
-	ttl      time.Duration
-	interval time.Duration
-	cache    cache
+	client         *http.Client
+	url            string
+	ttl            time.Duration
+	interval       time.Duration
+	initialBackoff time.Duration
+	maxBackoff     time.Duration
+	cache          cache
+}
+
+// newScraper builds the production scraper with the documented timings.
+func newScraper(cfg config) *scraper {
+	return &scraper{
+		client:         &http.Client{Timeout: cfg.fetchTimeout},
+		url:            cfg.scrapeURL,
+		ttl:            cfg.cacheTTL,
+		interval:       cfg.scrapeInterval,
+		initialBackoff: initialBackoff,
+		maxBackoff:     maxBackoff,
+	}
 }
 
 func (s *scraper) Describe(ch chan<- *prometheus.Desc) {
 	ch <- secondsDesc
 	ch <- scrapeSuccessDesc
 	ch <- cacheStaleDesc
+}
+
+// staleAt reports whether a value fetched at fetchedAt is past its TTL at now;
+// a value exactly at the TTL is still fresh.
+func staleAt(now, fetchedAt time.Time, ttl time.Duration) bool {
+	return now.Sub(fetchedAt) > ttl
 }
 
 func (s *scraper) Collect(ch chan<- prometheus.Metric) {
@@ -106,11 +136,11 @@ func (s *scraper) Collect(ch chan<- prometheus.Metric) {
 		return
 	}
 
-	stale := time.Since(fetchedAt) > s.ttl
+	isStale := staleAt(time.Now(), fetchedAt, s.ttl)
 
 	ch <- prometheus.MustNewConstMetric(secondsDesc, prometheus.GaugeValue, value)
 
-	if stale {
+	if isStale {
 		ch <- prometheus.MustNewConstMetric(scrapeSuccessDesc, prometheus.GaugeValue, 0)
 		ch <- prometheus.MustNewConstMetric(cacheStaleDesc, prometheus.GaugeValue, 1)
 	} else {
@@ -123,11 +153,6 @@ func (s *scraper) Collect(ch chan<- prometheus.Metric) {
 // s.interval. On failure, applies exponential backoff up to maxBackoff.
 // It returns when ctx is cancelled so the loop unwinds during shutdown.
 func (s *scraper) run(ctx context.Context) {
-	const (
-		initialBackoff = 2 * time.Second
-		maxBackoff     = 60 * time.Second
-	)
-
 	// wait blocks for d unless ctx is cancelled first; it returns false on
 	// cancellation so the loop can exit instead of sleeping through shutdown.
 	wait := func(d time.Duration) bool {
@@ -146,14 +171,8 @@ func (s *scraper) run(ctx context.Context) {
 	for {
 		value, err := s.fetch(ctx)
 		if err != nil {
-			if backoff == 0 {
-				backoff = initialBackoff
-			} else {
-				backoff *= 2
-			}
-			if backoff > maxBackoff {
-				backoff = maxBackoff
-			}
+			// First failure waits initialBackoff, then doubles up to maxBackoff.
+			backoff = min(max(backoff*2, s.initialBackoff), s.maxBackoff)
 
 			slog.Error("scrape failed", "error", err, "retry_in", backoff)
 			if !wait(backoff) {
@@ -210,81 +229,51 @@ func (s *scraper) fetch(ctx context.Context) (float64, error) {
 }
 
 func main() {
-	os.Exit(realMain())
+	os.Exit(realMain(os.Args[1:]))
 }
 
-// realMain runs the exporter and returns the process exit code. Keeping
-// os.Exit in main (with no preceding defers) satisfies gocritic's
-// exitAfterDefer so every defer below runs before the process ends.
-func realMain() int {
-	showVersion := flag.Bool("version", false, "Print version and exit")
-	flag.Parse()
+// config is the exporter runtime configuration, read once from the environment.
+type config struct {
+	port           string
+	scrapeURL      string
+	cacheTTL       time.Duration
+	scrapeInterval time.Duration
+	fetchTimeout   time.Duration
+}
 
-	if *showVersion {
-		fmt.Println(version)
-		return 0
+// loadConfig reads the DOOMSDAY_CLOCK_EXPORTER_* environment, falling back to
+// the documented defaults for anything unset or not a number.
+func loadConfig() config {
+	return config{
+		port: envOr("DOOMSDAY_CLOCK_EXPORTER_HTTP_PORT", "8080"),
+		scrapeURL: envOr("DOOMSDAY_CLOCK_EXPORTER_SCRAPE_URL",
+			"https://thebulletin.org/wp-json/wp/v2/pages/10305"),
+		cacheTTL:       time.Duration(envIntOr("DOOMSDAY_CLOCK_EXPORTER_CACHE_TTL", 86400)) * time.Second,
+		scrapeInterval: time.Duration(envIntOr("DOOMSDAY_CLOCK_EXPORTER_SCRAPE_INTERVAL", 3600)) * time.Second,
+		fetchTimeout:   time.Duration(envIntOr("DOOMSDAY_CLOCK_EXPORTER_FETCH_TIMEOUT", 30)) * time.Second,
 	}
+}
 
-	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: logLevel(os.Getenv("B19_VERBOSITY"))})))
-
-	// shutdownCtx is cancelled on SIGINT/SIGTERM so the HTTP server and the
-	// background scraper unwind together instead of being killed mid-request.
-	shutdownCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
-
-	port := envOr("DOOMSDAY_CLOCK_EXPORTER_HTTP_PORT", "8080")
-	scrapeURL := envOr("DOOMSDAY_CLOCK_EXPORTER_SCRAPE_URL",
-		"https://thebulletin.org/wp-json/wp/v2/pages/10305")
-	cacheTTL := time.Duration(envIntOr("DOOMSDAY_CLOCK_EXPORTER_CACHE_TTL", 86400)) * time.Second
-	scrapeInterval := time.Duration(envIntOr("DOOMSDAY_CLOCK_EXPORTER_SCRAPE_INTERVAL", 3600)) * time.Second
-	fetchTimeout := time.Duration(envIntOr("DOOMSDAY_CLOCK_EXPORTER_FETCH_TIMEOUT", 30)) * time.Second
-
-	s := &scraper{
-		client:   &http.Client{Timeout: fetchTimeout},
-		url:      scrapeURL,
-		ttl:      cacheTTL,
-		interval: scrapeInterval,
-	}
-
-	// Registering on the default registry exposes the doomsdayclock_* gauges
-	// alongside the auto-registered Go runtime/process self-observability
-	// metrics (go_*, process_*) served by promhttp.Handler below.
-	prometheus.MustRegister(s)
-	go s.run(shutdownCtx)
-
-	mux := http.NewServeMux()
-	mux.Handle("/metrics", promhttp.Handler())
-	mux.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, "ok")
-	})
-
-	slog.Info("starting",
-		"port", port,
-		"version", version,
-		"cache_ttl", cacheTTL,
-		"scrape_interval", scrapeInterval,
-		"fetch_timeout", fetchTimeout,
-	)
-	srv := &http.Server{
-		Addr:         ":" + port,
-		Handler:      mux,
+// newServer builds the HTTP server with the read/write/idle contract that keeps
+// a slow client from holding a connection open indefinitely.
+func newServer(addr string, handler http.Handler) *http.Server {
+	return &http.Server{
+		Addr:         addr,
+		Handler:      handler,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
 	}
+}
 
-	// Run ListenAndServe in its own goroutine so realMain can select between
-	// an incoming shutdown signal and a fatal server error (e.g. port in use).
-	serverErr := make(chan error, 1)
-	go func() {
-		serverErr <- srv.ListenAndServe()
-	}()
-
+// serve blocks until ctx is cancelled or the server reports a fatal error, and
+// returns the process exit code. On cancellation it drains in-flight requests
+// for at most drain before giving up and reporting failure.
+func serve(ctx context.Context, srv *http.Server, serverErr <-chan error, drain time.Duration) int {
 	select {
-	case <-shutdownCtx.Done():
+	case <-ctx.Done():
 		slog.Info("shutdown signal received, draining HTTP requests and scraper")
-		drainCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		drainCtx, cancel := context.WithTimeout(context.Background(), drain)
 		defer cancel()
 		if err := srv.Shutdown(drainCtx); err != nil {
 			slog.Error("graceful shutdown failed", "error", err)
@@ -299,6 +288,63 @@ func realMain() int {
 		}
 	}
 	return 0
+}
+
+// realMain runs the exporter and returns the process exit code. Keeping
+// os.Exit in main (with no preceding defers) satisfies gocritic's
+// exitAfterDefer so every defer below runs before the process ends.
+func realMain(args []string) int {
+	fs := flag.NewFlagSet("doomsday-clock-exporter", flag.ExitOnError)
+	showVersion := fs.Bool("version", false, "Print version and exit")
+	fs.Parse(args)
+
+	if *showVersion {
+		fmt.Println(version)
+		return 0
+	}
+
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: logLevel(os.Getenv("B19_VERBOSITY"))})))
+
+	// shutdownCtx is cancelled on SIGINT/SIGTERM so the HTTP server and the
+	// background scraper unwind together instead of being killed mid-request.
+	shutdownCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	cfg := loadConfig()
+
+	slog.Info("starting",
+		"port", cfg.port,
+		"version", version,
+		"cache_ttl", cfg.cacheTTL,
+		"scrape_interval", cfg.scrapeInterval,
+		"fetch_timeout", cfg.fetchTimeout,
+	)
+
+	s := newScraper(cfg)
+
+	// Registering on the default registry exposes the doomsdayclock_* gauges
+	// alongside the auto-registered Go runtime/process self-observability
+	// metrics (go_*, process_*) served by promhttp.Handler below.
+	prometheus.MustRegister(s)
+	go s.run(shutdownCtx)
+
+	mux := http.NewServeMux()
+	mux.Handle("/metrics", promhttp.Handler())
+	mux.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, "ok")
+	})
+
+	srv := newServer(":"+cfg.port, mux)
+
+	// Run ListenAndServe in its own goroutine so realMain can select between
+	// an incoming shutdown signal and a fatal server error (e.g. port in use).
+	serverErr := make(chan error, 1)
+	go func() {
+		serverErr <- srv.ListenAndServe()
+	}()
+
+	return serve(shutdownCtx, srv, serverErr, drainTimeout)
 }
 
 // logLevel maps B19_VERBOSITY to a slog level; unset or unknown is warn.

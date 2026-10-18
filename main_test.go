@@ -5,15 +5,21 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"log/slog"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"sync"
+	"sync/atomic"
+	"syscall"
 	"testing"
 	"time"
 
@@ -522,5 +528,537 @@ func TestLogLevel(t *testing.T) {
 		if got := logLevel(in); got != want {
 			t.Errorf("logLevel(%q) = %v, want %v", in, got, want)
 		}
+	}
+}
+
+// The retry and drain timings are a published behaviour, so they are pinned
+// here rather than left to whatever the literals happen to say.
+func TestTimingContract(t *testing.T) {
+	if initialBackoff != 2*time.Second {
+		t.Errorf("initialBackoff=%v want=2s", initialBackoff)
+	}
+	if maxBackoff != 60*time.Second {
+		t.Errorf("maxBackoff=%v want=60s", maxBackoff)
+	}
+	if drainTimeout != 10*time.Second {
+		t.Errorf("drainTimeout=%v want=10s", drainTimeout)
+	}
+}
+
+func TestStaleAt(t *testing.T) {
+	fetchedAt := time.Date(2026, time.October, 18, 12, 0, 0, 0, time.UTC)
+	ttl := 24 * time.Hour
+
+	cases := []struct {
+		name string
+		now  time.Time
+		want bool
+	}{
+		{"fresh", fetchedAt, false},
+		{"exactly at ttl", fetchedAt.Add(ttl), false},
+		{"one nanosecond past ttl", fetchedAt.Add(ttl).Add(time.Nanosecond), true},
+		{"well past ttl", fetchedAt.Add(72 * time.Hour), true},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := staleAt(tc.now, fetchedAt, ttl); got != tc.want {
+				t.Errorf("staleAt=%v want=%v", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestFetchBuildRequestError(t *testing.T) {
+	s := &scraper{
+		client: &http.Client{Timeout: time.Second},
+		url:    "http://\x7f-invalid/",
+		ttl:    time.Hour,
+	}
+
+	_, err := s.fetch(context.Background())
+	if err == nil {
+		t.Fatal("expected error for an unparsable URL")
+	}
+	if !strings.Contains(err.Error(), "build request") {
+		t.Errorf("error=%v want it to name the request build step", err)
+	}
+}
+
+// A clock value with more digits than float64 can hold overflows to +Inf,
+// which must surface as an error rather than as an unusable gauge value.
+func TestFetchValueOutOfFloat64Range(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		page := bulletinPage{}
+		page.Excerpt.Rendered = "It is now " + strings.Repeat("9", 400) + " seconds to midnight"
+		json.NewEncoder(w).Encode(page)
+	}))
+	defer srv.Close()
+
+	s := &scraper{client: srv.Client(), url: srv.URL, ttl: time.Hour}
+
+	if _, err := s.fetch(context.Background()); err == nil {
+		t.Fatal("expected error for an out-of-range clock value")
+	}
+}
+
+func TestLoadConfigDefaults(t *testing.T) {
+	for _, key := range []string{
+		"DOOMSDAY_CLOCK_EXPORTER_HTTP_PORT",
+		"DOOMSDAY_CLOCK_EXPORTER_SCRAPE_URL",
+		"DOOMSDAY_CLOCK_EXPORTER_CACHE_TTL",
+		"DOOMSDAY_CLOCK_EXPORTER_SCRAPE_INTERVAL",
+		"DOOMSDAY_CLOCK_EXPORTER_FETCH_TIMEOUT",
+	} {
+		t.Setenv(key, "")
+	}
+
+	want := config{
+		port:           "8080",
+		scrapeURL:      "https://thebulletin.org/wp-json/wp/v2/pages/10305",
+		cacheTTL:       86400 * time.Second,
+		scrapeInterval: 3600 * time.Second,
+		fetchTimeout:   30 * time.Second,
+	}
+	if got := loadConfig(); got != want {
+		t.Errorf("config=%+v want=%+v", got, want)
+	}
+}
+
+func TestLoadConfigFromEnv(t *testing.T) {
+	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_HTTP_PORT", "9999")
+	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_SCRAPE_URL", "http://bulletin.test/page/1")
+	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_CACHE_TTL", "5")
+	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_SCRAPE_INTERVAL", "7")
+	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_FETCH_TIMEOUT", "11")
+
+	want := config{
+		port:           "9999",
+		scrapeURL:      "http://bulletin.test/page/1",
+		cacheTTL:       5 * time.Second,
+		scrapeInterval: 7 * time.Second,
+		fetchTimeout:   11 * time.Second,
+	}
+	if got := loadConfig(); got != want {
+		t.Errorf("config=%+v want=%+v", got, want)
+	}
+}
+
+func TestLoadConfigRejectsNonNumericDurations(t *testing.T) {
+	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_CACHE_TTL", "notanumber")
+	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_SCRAPE_INTERVAL", "24h")
+	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_FETCH_TIMEOUT", " ")
+
+	cfg := loadConfig()
+	if cfg.cacheTTL != 86400*time.Second {
+		t.Errorf("cacheTTL=%v want=86400s", cfg.cacheTTL)
+	}
+	if cfg.scrapeInterval != 3600*time.Second {
+		t.Errorf("scrapeInterval=%v want=3600s", cfg.scrapeInterval)
+	}
+	if cfg.fetchTimeout != 30*time.Second {
+		t.Errorf("fetchTimeout=%v want=30s", cfg.fetchTimeout)
+	}
+}
+
+func TestNewScraper(t *testing.T) {
+	cfg := config{
+		port:           "8080",
+		scrapeURL:      "http://bulletin.test/page/1",
+		cacheTTL:       2 * time.Hour,
+		scrapeInterval: 3 * time.Hour,
+		fetchTimeout:   4 * time.Second,
+	}
+
+	s := newScraper(cfg)
+
+	if s.url != cfg.scrapeURL {
+		t.Errorf("url=%q want=%q", s.url, cfg.scrapeURL)
+	}
+	if s.ttl != cfg.cacheTTL {
+		t.Errorf("ttl=%v want=%v", s.ttl, cfg.cacheTTL)
+	}
+	if s.interval != cfg.scrapeInterval {
+		t.Errorf("interval=%v want=%v", s.interval, cfg.scrapeInterval)
+	}
+	if s.client.Timeout != cfg.fetchTimeout {
+		t.Errorf("client timeout=%v want=%v", s.client.Timeout, cfg.fetchTimeout)
+	}
+	if s.initialBackoff != initialBackoff || s.maxBackoff != maxBackoff {
+		t.Errorf("backoff bounds=(%v,%v) want=(%v,%v)", s.initialBackoff, s.maxBackoff, initialBackoff, maxBackoff)
+	}
+}
+
+func TestNewServerTimeouts(t *testing.T) {
+	srv := newServer(":1234", http.NotFoundHandler())
+
+	if srv.Addr != ":1234" {
+		t.Errorf("addr=%q want=:1234", srv.Addr)
+	}
+	if srv.Handler == nil {
+		t.Error("handler is nil")
+	}
+	if srv.ReadTimeout != 5*time.Second {
+		t.Errorf("read timeout=%v want=5s", srv.ReadTimeout)
+	}
+	if srv.WriteTimeout != 10*time.Second {
+		t.Errorf("write timeout=%v want=10s", srv.WriteTimeout)
+	}
+	if srv.IdleTimeout != 120*time.Second {
+		t.Errorf("idle timeout=%v want=120s", srv.IdleTimeout)
+	}
+}
+
+// freePort returns a loopback port that was free a moment ago.
+func freePort(t *testing.T) string {
+	t.Helper()
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("reserve port: %v", err)
+	}
+	defer ln.Close()
+	_, port, err := net.SplitHostPort(ln.Addr().String())
+	if err != nil {
+		t.Fatalf("split %s: %v", ln.Addr(), err)
+	}
+	return port
+}
+
+// waitForListener blocks until addr accepts a TCP connection.
+func waitForListener(t *testing.T, addr string) {
+	t.Helper()
+	deadline := time.Now().Add(5 * time.Second)
+	for time.Now().Before(deadline) {
+		conn, err := net.DialTimeout("tcp", addr, 200*time.Millisecond)
+		if err == nil {
+			conn.Close()
+			return
+		}
+		time.Sleep(2 * time.Millisecond)
+	}
+	t.Fatalf("nothing listening on %s", addr)
+}
+
+func TestServeDrainsOnShutdown(t *testing.T) {
+	addr := "127.0.0.1:" + freePort(t)
+	srv := newServer(addr, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprint(w, "ok")
+	}))
+
+	serverErr := make(chan error, 1)
+	go func() { serverErr <- srv.ListenAndServe() }()
+	waitForListener(t, addr)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	code := make(chan int, 1)
+	go func() { code <- serve(ctx, srv, serverErr, drainTimeout) }()
+	cancel()
+
+	select {
+	case got := <-code:
+		if got != 0 {
+			t.Errorf("exit code=%d want=0", got)
+		}
+	case <-time.After(10 * time.Second):
+		t.Fatal("serve did not return after shutdown")
+	}
+
+	select {
+	case err := <-serverErr:
+		if !errors.Is(err, http.ErrServerClosed) {
+			t.Errorf("server error=%v want=%v", err, http.ErrServerClosed)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("server did not stop")
+	}
+
+	client := &http.Client{Timeout: time.Second}
+	if _, err := client.Get("http://" + addr); err == nil {
+		t.Error("server still accepts connections after shutdown")
+	}
+}
+
+func TestServeAcceptsServerClosedAsCleanExit(t *testing.T) {
+	serverErr := make(chan error, 1)
+	serverErr <- http.ErrServerClosed
+
+	srv := newServer("127.0.0.1:0", http.NotFoundHandler())
+	if got := serve(context.Background(), srv, serverErr, drainTimeout); got != 0 {
+		t.Errorf("exit code=%d want=0 for ErrServerClosed", got)
+	}
+}
+
+func TestServeAcceptsClosedErrorChannelAsCleanExit(t *testing.T) {
+	serverErr := make(chan error)
+	close(serverErr)
+
+	srv := newServer("127.0.0.1:0", http.NotFoundHandler())
+	if got := serve(context.Background(), srv, serverErr, drainTimeout); got != 0 {
+		t.Errorf("exit code=%d want=0 for a nil server error", got)
+	}
+}
+
+func TestServeReportsFatalServerError(t *testing.T) {
+	serverErr := make(chan error, 1)
+	serverErr <- errors.New("listen tcp :8080: bind: address already in use")
+
+	srv := newServer("127.0.0.1:0", http.NotFoundHandler())
+	if got := serve(context.Background(), srv, serverErr, drainTimeout); got != 1 {
+		t.Errorf("exit code=%d want=1 for a fatal server error", got)
+	}
+}
+
+// A request still in flight when the drain window closes must fail the
+// shutdown instead of being reported as a clean drain.
+func TestServeFailsWhenDrainExpires(t *testing.T) {
+	release := make(chan struct{})
+	started := make(chan struct{})
+	addr := "127.0.0.1:" + freePort(t)
+
+	srv := newServer(addr, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		close(started)
+		<-release
+		fmt.Fprint(w, "late")
+	}))
+	defer srv.Close()
+
+	serverErr := make(chan error, 1)
+	go func() { serverErr <- srv.ListenAndServe() }()
+	waitForListener(t, addr)
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	go client.Get("http://" + addr)
+	<-started
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if got := serve(ctx, srv, serverErr, 20*time.Millisecond); got != 1 {
+		t.Errorf("exit code=%d want=1 when the drain window expires", got)
+	}
+
+	close(release)
+}
+
+func TestRealMainPrintsVersionAndExits(t *testing.T) {
+	code := 0
+	out := captureStdout(t, func() { code = realMain([]string{"-version"}) })
+
+	if code != 0 {
+		t.Errorf("exit code=%d want=0", code)
+	}
+	if out != version+"\n" {
+		t.Errorf("stdout=%q want=%q", out, version+"\n")
+	}
+}
+
+// TestRealMainServesUntilSignal is the end-to-end path a container runs:
+// scrape the Bulletin, serve /health and /metrics, then drain on SIGTERM.
+func TestRealMainServesUntilSignal(t *testing.T) {
+	bulletin := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		page := bulletinPage{}
+		page.Excerpt.Rendered = ninetySecondsExcerpt
+		json.NewEncoder(w).Encode(page)
+	}))
+	defer bulletin.Close()
+
+	port := freePort(t)
+	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_HTTP_PORT", port)
+	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_SCRAPE_URL", bulletin.URL)
+	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_CACHE_TTL", "60")
+	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_SCRAPE_INTERVAL", "3600")
+	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_FETCH_TIMEOUT", "5")
+
+	restoreDefaultLogger := slog.Default()
+	t.Cleanup(func() { slog.SetDefault(restoreDefaultLogger) })
+
+	code := make(chan int, 1)
+	go func() { code <- realMain(nil) }()
+
+	base := "http://127.0.0.1:" + port
+	client := &http.Client{Timeout: 5 * time.Second}
+
+	if body := waitForBody(t, client, base+"/health", "ok"); body != "ok" {
+		t.Errorf("/health body=%q want=ok", body)
+	}
+
+	body := waitForBody(t, client, base+"/metrics", metricSecondsToMidnight)
+	for _, want := range []string{metricSecondsToMidnight, metricScrapeSuccess, metricCacheStale, "90"} {
+		if !strings.Contains(body, want) {
+			t.Errorf("/metrics missing %q", want)
+		}
+	}
+
+	if err := syscall.Kill(syscall.Getpid(), syscall.SIGTERM); err != nil {
+		t.Fatalf("signal self: %v", err)
+	}
+
+	select {
+	case got := <-code:
+		if got != 0 {
+			t.Errorf("exit code=%d want=0", got)
+		}
+	case <-time.After(20 * time.Second):
+		t.Fatal("realMain did not exit on SIGTERM")
+	}
+}
+
+// waitForBody polls url until want appears in the response, or gives up.
+func waitForBody(t *testing.T, client *http.Client, url, want string) string {
+	t.Helper()
+	deadline := time.Now().Add(10 * time.Second)
+	var last string
+	for time.Now().Before(deadline) {
+		resp, err := client.Get(url)
+		if err == nil {
+			body, _ := io.ReadAll(resp.Body)
+			resp.Body.Close()
+			last = string(body)
+			if strings.Contains(last, want) {
+				return last
+			}
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	t.Fatalf("%s never served %q (last body: %q)", url, want, last)
+	return ""
+}
+
+// captureStdout runs fn with os.Stdout redirected to a pipe and returns what
+// fn wrote there.
+func captureStdout(t *testing.T, fn func()) string {
+	t.Helper()
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("pipe: %v", err)
+	}
+
+	orig := os.Stdout
+	os.Stdout = w
+	fn()
+	os.Stdout = orig
+	w.Close()
+
+	var buf bytes.Buffer
+	if _, err := io.Copy(&buf, r); err != nil {
+		t.Fatalf("read captured stdout: %v", err)
+	}
+	r.Close()
+	return buf.String()
+}
+
+// TestRunBackoffGrowsAndResets drives the retry loop through a scripted
+// upstream: two failures, a success, another failure. The gap before the
+// second retry is the initial backoff, the gap before the third is doubled,
+// and the gap after the later failure is back to the initial backoff.
+func TestRunBackoffGrowsAndResets(t *testing.T) {
+	const (
+		initial = 30 * time.Millisecond
+		maximum = 240 * time.Millisecond
+		every   = 60 * time.Millisecond
+	)
+
+	var mu sync.Mutex
+	var hits []time.Time
+	var calls atomic.Int64
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		mu.Lock()
+		hits = append(hits, time.Now())
+		mu.Unlock()
+		if n := calls.Add(1); n == 1 || n == 2 || n == 4 {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		page := bulletinPage{}
+		page.Excerpt.Rendered = ninetySecondsExcerpt
+		json.NewEncoder(w).Encode(page)
+	}))
+	defer srv.Close()
+
+	s := &scraper{
+		client:         srv.Client(),
+		url:            srv.URL,
+		ttl:            time.Hour,
+		interval:       every,
+		initialBackoff: initial,
+		maxBackoff:     maximum,
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	done := make(chan struct{})
+	go func() { defer close(done); s.run(ctx) }()
+
+	deadline := time.After(10 * time.Second)
+	for {
+		mu.Lock()
+		reached := len(hits)
+		mu.Unlock()
+		if reached >= 5 {
+			break
+		}
+		select {
+		case <-deadline:
+			t.Fatalf("run() reached %d scrapes, want 5", reached)
+		case <-time.After(2 * time.Millisecond):
+		}
+	}
+	cancel()
+	<-done
+
+	mu.Lock()
+	got := make([]time.Duration, 4)
+	for i := range got {
+		got[i] = hits[i+1].Sub(hits[i])
+	}
+	mu.Unlock()
+
+	if got[0] < 20*time.Millisecond {
+		t.Errorf("gap before the first retry=%v, want at least the initial backoff", got[0])
+	}
+	if got[1] < 45*time.Millisecond {
+		t.Errorf("gap before the second retry=%v, want a doubled backoff", got[1])
+	}
+	if got[3] < 20*time.Millisecond {
+		t.Errorf("gap after a success=%v, want the backoff reset to the initial value", got[3])
+	}
+	if got[3] > 3*initial {
+		t.Errorf("gap after a success=%v, want the backoff reset and not grown", got[3])
+	}
+}
+
+// TestRunStopsDuringBackoffWait proves cancellation interrupts the retry
+// sleep, so a failing upstream cannot hold shutdown open for the backoff.
+func TestRunStopsDuringBackoffWait(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusServiceUnavailable)
+	}))
+	defer srv.Close()
+
+	s := &scraper{
+		client:         srv.Client(),
+		url:            srv.URL,
+		ttl:            time.Hour,
+		interval:       time.Hour,
+		initialBackoff: 30 * time.Second,
+		maxBackoff:     time.Minute,
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	done := make(chan struct{})
+	go func() { defer close(done); s.run(ctx) }()
+
+	time.Sleep(50 * time.Millisecond)
+	cancel()
+
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("run() did not stop while waiting out a backoff")
+	}
+
+	if _, _, has := s.cache.load(); has {
+		t.Error("a failing upstream must not populate the cache")
 	}
 }
