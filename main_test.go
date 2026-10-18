@@ -531,8 +531,7 @@ func TestLogLevel(t *testing.T) {
 	}
 }
 
-// The drain window is a published behaviour, so it is pinned here rather
-// than left to whatever the literal happens to say.
+// The drain window is a published behaviour, so it is pinned by this test.
 func TestDrainBudget(t *testing.T) {
 	if got := drainBudget(); got != 10*time.Second {
 		t.Errorf("drainBudget()=%v want=10s", got)
@@ -579,8 +578,7 @@ func TestFetchBuildRequestError(t *testing.T) {
 	}
 }
 
-// A clock value with more digits than float64 can hold overflows to +Inf,
-// which must surface as an error rather than as an unusable gauge value.
+// A clock value with more digits than float64 can hold must error, not gauge.
 func TestFetchValueOutOfFloat64Range(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		page := bulletinPage{}
@@ -802,8 +800,7 @@ func TestServeReportsFatalServerError(t *testing.T) {
 	}
 }
 
-// A request still in flight when the drain window closes must fail the
-// shutdown instead of being reported as a clean drain.
+// A request still in flight when the drain window closes fails the shutdown.
 func TestServeFailsWhenDrainExpires(t *testing.T) {
 	release := make(chan struct{})
 	started := make(chan struct{})
@@ -845,8 +842,7 @@ func TestRealMainPrintsVersionAndExits(t *testing.T) {
 	}
 }
 
-// TestRealMainServesUntilSignal is the end-to-end path a container runs:
-// scrape the Bulletin, serve /health and /metrics, then drain on SIGTERM.
+// TestRealMainServesUntilSignal is the end-to-end path a container runs.
 func TestRealMainServesUntilSignal(t *testing.T) {
 	bulletin := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		page := bulletinPage{}
@@ -896,7 +892,7 @@ func TestRealMainServesUntilSignal(t *testing.T) {
 	}
 }
 
-// waitForBody polls url until want appears in the response, or gives up.
+// waitForBody polls url until the response body contains want.
 func waitForBody(t *testing.T, client *http.Client, url, want string) string {
 	t.Helper()
 	deadline := time.Now().Add(10 * time.Second)
@@ -917,8 +913,7 @@ func waitForBody(t *testing.T, client *http.Client, url, want string) string {
 	return ""
 }
 
-// captureStdout runs fn with os.Stdout redirected to a pipe and returns what
-// fn wrote there.
+// captureStdout returns everything fn wrote to os.Stdout.
 func captureStdout(t *testing.T, fn func()) string {
 	t.Helper()
 	r, w, err := os.Pipe()
@@ -940,8 +935,7 @@ func captureStdout(t *testing.T, fn func()) string {
 	return buf.String()
 }
 
-// hitRecorder timestamps the requests a test server receives, so a retry
-// cadence can be asserted on the gaps between consecutive scrapes.
+// hitRecorder timestamps upstream requests so the retry cadence can be asserted.
 type hitRecorder struct {
 	mu    sync.Mutex
 	hits  []time.Time
@@ -972,8 +966,7 @@ func (h *hitRecorder) gaps(n int) []time.Duration {
 	return out
 }
 
-// runUntilHits runs s until its upstream has answered n times, then cancels
-// the loop and waits for it to unwind.
+// runUntilHits runs s until the upstream has answered n times, then stops it.
 func runUntilHits(t *testing.T, s *scraper, rec *hitRecorder, n int) {
 	t.Helper()
 	ctx, cancel := context.WithCancel(context.Background())
@@ -995,10 +988,7 @@ func runUntilHits(t *testing.T, s *scraper, rec *hitRecorder, n int) {
 	<-done
 }
 
-// TestRunBackoffGrowsAndResets drives the retry loop through a scripted
-// upstream: two failures, a success, another failure. The gap before the
-// second retry is the initial backoff, the gap before the third is doubled,
-// and the gap after the later failure is back to the initial backoff.
+// TestRunBackoffGrowsAndResets scripts fail, fail, ok, fail so each gap shows the policy.
 func TestRunBackoffGrowsAndResets(t *testing.T) {
 	const (
 		initial = 30 * time.Millisecond
@@ -1047,8 +1037,7 @@ func TestRunBackoffGrowsAndResets(t *testing.T) {
 	}
 }
 
-// TestRunBackoffIsCappedAtMax keeps an upstream that never recovers from
-// pushing the retry delay past the ceiling.
+// TestRunBackoffIsCappedAtMax keeps a dead upstream from growing the delay without bound.
 func TestRunBackoffIsCappedAtMax(t *testing.T) {
 	const (
 		initial = 20 * time.Millisecond
@@ -1086,8 +1075,7 @@ func TestRunBackoffIsCappedAtMax(t *testing.T) {
 	}
 }
 
-// TestRunStopsDuringBackoffWait proves cancellation interrupts the retry
-// sleep, so a failing upstream cannot hold shutdown open for the backoff.
+// TestRunStopsDuringBackoffWait proves cancellation interrupts the retry sleep.
 func TestRunStopsDuringBackoffWait(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusServiceUnavailable)

@@ -83,20 +83,18 @@ func (c *cache) load() (float64, time.Time, bool) {
 }
 
 // scraper fetches the Doomsday Clock value in the background and caches it.
-// initialBackoff and maxBackoff are fields so the retry cadence can be
-// exercised at test speed instead of at wall-clock seconds.
 type scraper struct {
-	client         *http.Client
-	url            string
-	ttl            time.Duration
-	interval       time.Duration
+	client   *http.Client
+	url      string
+	ttl      time.Duration
+	interval time.Duration
+	// Fields rather than constants, so the retry cadence runs at test speed.
 	initialBackoff time.Duration
 	maxBackoff     time.Duration
 	cache          cache
 }
 
-// newScraper builds the production scraper with the documented retry policy:
-// a failed scrape waits two seconds, doubling up to a one-minute ceiling.
+// newScraper builds the production scraper: retry after 2s, doubling to a 60s ceiling.
 func newScraper(cfg config) *scraper {
 	return &scraper{
 		client:         &http.Client{Timeout: cfg.fetchTimeout},
@@ -108,8 +106,7 @@ func newScraper(cfg config) *scraper {
 	}
 }
 
-// drainBudget is the window in-flight requests get to finish during a
-// graceful shutdown before the exporter reports the drain as failed.
+// drainBudget is the window in-flight requests get to finish during a shutdown.
 func drainBudget() time.Duration {
 	return 10 * time.Second
 }
@@ -120,8 +117,7 @@ func (s *scraper) Describe(ch chan<- *prometheus.Desc) {
 	ch <- cacheStaleDesc
 }
 
-// staleAt reports whether a value fetched at fetchedAt is past its TTL at now;
-// a value exactly at the TTL is still fresh.
+// staleAt reports whether a value fetched at fetchedAt is past its TTL at now.
 func staleAt(now, fetchedAt time.Time, ttl time.Duration) bool {
 	return now.Sub(fetchedAt) > ttl
 }
@@ -240,8 +236,7 @@ type config struct {
 	fetchTimeout   time.Duration
 }
 
-// loadConfig reads the DOOMSDAY_CLOCK_EXPORTER_* environment, falling back to
-// the documented defaults for anything unset or not a number.
+// loadConfig reads the DOOMSDAY_CLOCK_EXPORTER_* environment, defaulting anything unset.
 func loadConfig() config {
 	return config{
 		port: envOr("DOOMSDAY_CLOCK_EXPORTER_HTTP_PORT", "8080"),
@@ -253,8 +248,7 @@ func loadConfig() config {
 	}
 }
 
-// newServer builds the HTTP server with the read/write/idle contract that keeps
-// a slow client from holding a connection open indefinitely.
+// newServer builds the HTTP server with the read/write/idle contract.
 func newServer(addr string, handler http.Handler) *http.Server {
 	return &http.Server{
 		Addr:         addr,
@@ -265,9 +259,7 @@ func newServer(addr string, handler http.Handler) *http.Server {
 	}
 }
 
-// serve blocks until ctx is cancelled or the server reports a fatal error, and
-// returns the process exit code. On cancellation it drains in-flight requests
-// for at most drain before giving up and reporting failure.
+// serve waits for a shutdown signal or a fatal server error, drains up to drain, and returns the exit code.
 func serve(ctx context.Context, srv *http.Server, serverErr <-chan error, drain time.Duration) int {
 	select {
 	case <-ctx.Done():
