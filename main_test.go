@@ -940,6 +940,61 @@ func captureStdout(t *testing.T, fn func()) string {
 	return buf.String()
 }
 
+// hitRecorder timestamps the requests a test server receives, so a retry
+// cadence can be asserted on the gaps between consecutive scrapes.
+type hitRecorder struct {
+	mu    sync.Mutex
+	hits  []time.Time
+	calls atomic.Int64
+}
+
+func (h *hitRecorder) record() int64 {
+	h.mu.Lock()
+	h.hits = append(h.hits, time.Now())
+	h.mu.Unlock()
+	return h.calls.Add(1)
+}
+
+func (h *hitRecorder) count() int {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	return len(h.hits)
+}
+
+// gaps returns the n-1 intervals between the first n recorded hits.
+func (h *hitRecorder) gaps(n int) []time.Duration {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	out := make([]time.Duration, 0, n-1)
+	for i := 1; i < n && i < len(h.hits); i++ {
+		out = append(out, h.hits[i].Sub(h.hits[i-1]))
+	}
+	return out
+}
+
+// runUntilHits runs s until its upstream has answered n times, then cancels
+// the loop and waits for it to unwind.
+func runUntilHits(t *testing.T, s *scraper, rec *hitRecorder, n int) {
+	t.Helper()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	done := make(chan struct{})
+	go func() { defer close(done); s.run(ctx) }()
+
+	deadline := time.After(30 * time.Second)
+	for rec.count() < n {
+		select {
+		case <-deadline:
+			cancel()
+			<-done
+			t.Fatalf("run() reached %d scrapes, want %d", rec.count(), n)
+		case <-time.After(2 * time.Millisecond):
+		}
+	}
+	cancel()
+	<-done
+}
+
 // TestRunBackoffGrowsAndResets drives the retry loop through a scripted
 // upstream: two failures, a success, another failure. The gap before the
 // second retry is the initial backoff, the gap before the third is doubled,
@@ -947,19 +1002,13 @@ func captureStdout(t *testing.T, fn func()) string {
 func TestRunBackoffGrowsAndResets(t *testing.T) {
 	const (
 		initial = 30 * time.Millisecond
-		maximum = 240 * time.Millisecond
+		maximum = 400 * time.Millisecond
 		every   = 60 * time.Millisecond
 	)
 
-	var mu sync.Mutex
-	var hits []time.Time
-	var calls atomic.Int64
-
+	rec := &hitRecorder{}
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		mu.Lock()
-		hits = append(hits, time.Now())
-		mu.Unlock()
-		if n := calls.Add(1); n == 1 || n == 2 || n == 4 {
+		if n := rec.record(); n == 1 || n == 2 || n == 4 {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
@@ -978,46 +1027,62 @@ func TestRunBackoffGrowsAndResets(t *testing.T) {
 		maxBackoff:     maximum,
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	done := make(chan struct{})
-	go func() { defer close(done); s.run(ctx) }()
+	runUntilHits(t, s, rec, 5)
+	gaps := rec.gaps(5)
 
-	deadline := time.After(10 * time.Second)
-	for {
-		mu.Lock()
-		reached := len(hits)
-		mu.Unlock()
-		if reached >= 5 {
-			break
-		}
-		select {
-		case <-deadline:
-			t.Fatalf("run() reached %d scrapes, want 5", reached)
-		case <-time.After(2 * time.Millisecond):
-		}
+	if len(gaps) != 4 {
+		t.Fatalf("got %d gaps, want 4", len(gaps))
 	}
-	cancel()
-	<-done
+	if gaps[0] < 20*time.Millisecond {
+		t.Errorf("gap before the first retry=%v, want at least the initial backoff", gaps[0])
+	}
+	if gaps[1] < 45*time.Millisecond {
+		t.Errorf("gap before the second retry=%v, want a doubled backoff", gaps[1])
+	}
+	if gaps[3] < 20*time.Millisecond {
+		t.Errorf("gap after a success=%v, want the backoff reset to the initial value", gaps[3])
+	}
+	if gaps[3] > 4*initial {
+		t.Errorf("gap after a success=%v, want the backoff reset and not grown", gaps[3])
+	}
+}
 
-	mu.Lock()
-	got := make([]time.Duration, 4)
-	for i := range got {
-		got[i] = hits[i+1].Sub(hits[i])
-	}
-	mu.Unlock()
+// TestRunBackoffIsCappedAtMax keeps an upstream that never recovers from
+// pushing the retry delay past the ceiling.
+func TestRunBackoffIsCappedAtMax(t *testing.T) {
+	const (
+		initial = 20 * time.Millisecond
+		maximum = 30 * time.Millisecond
+	)
 
-	if got[0] < 20*time.Millisecond {
-		t.Errorf("gap before the first retry=%v, want at least the initial backoff", got[0])
+	rec := &hitRecorder{}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		rec.record()
+		w.WriteHeader(http.StatusServiceUnavailable)
+	}))
+	defer srv.Close()
+
+	s := &scraper{
+		client:         srv.Client(),
+		url:            srv.URL,
+		ttl:            time.Hour,
+		interval:       time.Hour,
+		initialBackoff: initial,
+		maxBackoff:     maximum,
 	}
-	if got[1] < 45*time.Millisecond {
-		t.Errorf("gap before the second retry=%v, want a doubled backoff", got[1])
+
+	runUntilHits(t, s, rec, 5)
+	gaps := rec.gaps(5)
+
+	if len(gaps) != 4 {
+		t.Fatalf("got %d gaps, want 4", len(gaps))
 	}
-	if got[3] < 20*time.Millisecond {
-		t.Errorf("gap after a success=%v, want the backoff reset to the initial value", got[3])
+	if gaps[0] < 15*time.Millisecond {
+		t.Errorf("gap before the first retry=%v, want at least the initial backoff", gaps[0])
 	}
-	if got[3] > 3*initial {
-		t.Errorf("gap after a success=%v, want the backoff reset and not grown", got[3])
+	// Uncapped, the fourth gap would already be eight times the initial backoff.
+	if last := gaps[3]; last > 2*maximum {
+		t.Errorf("gap between the last retries=%v, want no more than the %v ceiling", last, maximum)
 	}
 }
 

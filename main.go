@@ -295,7 +295,8 @@ func serve(ctx context.Context, srv *http.Server, serverErr <-chan error, drain 
 func realMain(args []string) int {
 	fs := flag.NewFlagSet("doomsday-clock-exporter", flag.ExitOnError)
 	showVersion := fs.Bool("version", false, "Print version and exit")
-	fs.Parse(args)
+	// ExitOnError prints the usage and exits on a bad flag, so Parse never returns an error.
+	_ = fs.Parse(args)
 
 	if *showVersion {
 		fmt.Println(version)
