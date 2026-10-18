@@ -531,17 +531,11 @@ func TestLogLevel(t *testing.T) {
 	}
 }
 
-// The retry and drain timings are a published behaviour, so they are pinned
-// here rather than left to whatever the literals happen to say.
-func TestTimingContract(t *testing.T) {
-	if initialBackoff != 2*time.Second {
-		t.Errorf("initialBackoff=%v want=2s", initialBackoff)
-	}
-	if maxBackoff != 60*time.Second {
-		t.Errorf("maxBackoff=%v want=60s", maxBackoff)
-	}
-	if drainTimeout != 10*time.Second {
-		t.Errorf("drainTimeout=%v want=10s", drainTimeout)
+// The drain window is a published behaviour, so it is pinned here rather
+// than left to whatever the literal happens to say.
+func TestDrainBudget(t *testing.T) {
+	if got := drainBudget(); got != 10*time.Second {
+		t.Errorf("drainBudget()=%v want=10s", got)
 	}
 }
 
@@ -684,8 +678,8 @@ func TestNewScraper(t *testing.T) {
 	if s.client.Timeout != cfg.fetchTimeout {
 		t.Errorf("client timeout=%v want=%v", s.client.Timeout, cfg.fetchTimeout)
 	}
-	if s.initialBackoff != initialBackoff || s.maxBackoff != maxBackoff {
-		t.Errorf("backoff bounds=(%v,%v) want=(%v,%v)", s.initialBackoff, s.maxBackoff, initialBackoff, maxBackoff)
+	if s.initialBackoff != 2*time.Second || s.maxBackoff != 60*time.Second {
+		t.Errorf("backoff bounds=(%v,%v) want=(2s,60s)", s.initialBackoff, s.maxBackoff)
 	}
 }
 
@@ -751,7 +745,7 @@ func TestServeDrainsOnShutdown(t *testing.T) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	code := make(chan int, 1)
-	go func() { code <- serve(ctx, srv, serverErr, drainTimeout) }()
+	go func() { code <- serve(ctx, srv, serverErr, drainBudget()) }()
 	cancel()
 
 	select {
@@ -783,7 +777,7 @@ func TestServeAcceptsServerClosedAsCleanExit(t *testing.T) {
 	serverErr <- http.ErrServerClosed
 
 	srv := newServer("127.0.0.1:0", http.NotFoundHandler())
-	if got := serve(context.Background(), srv, serverErr, drainTimeout); got != 0 {
+	if got := serve(context.Background(), srv, serverErr, drainBudget()); got != 0 {
 		t.Errorf("exit code=%d want=0 for ErrServerClosed", got)
 	}
 }
@@ -793,7 +787,7 @@ func TestServeAcceptsClosedErrorChannelAsCleanExit(t *testing.T) {
 	close(serverErr)
 
 	srv := newServer("127.0.0.1:0", http.NotFoundHandler())
-	if got := serve(context.Background(), srv, serverErr, drainTimeout); got != 0 {
+	if got := serve(context.Background(), srv, serverErr, drainBudget()); got != 0 {
 		t.Errorf("exit code=%d want=0 for a nil server error", got)
 	}
 }
@@ -803,7 +797,7 @@ func TestServeReportsFatalServerError(t *testing.T) {
 	serverErr <- errors.New("listen tcp :8080: bind: address already in use")
 
 	srv := newServer("127.0.0.1:0", http.NotFoundHandler())
-	if got := serve(context.Background(), srv, serverErr, drainTimeout); got != 1 {
+	if got := serve(context.Background(), srv, serverErr, drainBudget()); got != 1 {
 		t.Errorf("exit code=%d want=1 for a fatal server error", got)
 	}
 }

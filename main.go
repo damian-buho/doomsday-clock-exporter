@@ -32,14 +32,6 @@ const (
 	metricCacheStale        = "doomsdayclock_cache_stale"
 )
 
-// Timing contract of the exporter: retry backoff bounds and the graceful
-// shutdown drain window. Pinned by tests so a change is a deliberate one.
-const (
-	initialBackoff = 2 * time.Second
-	maxBackoff     = 60 * time.Second
-	drainTimeout   = 10 * time.Second
-)
-
 var version = "unknown"
 
 var (
@@ -103,16 +95,23 @@ type scraper struct {
 	cache          cache
 }
 
-// newScraper builds the production scraper with the documented timings.
+// newScraper builds the production scraper with the documented retry policy:
+// a failed scrape waits two seconds, doubling up to a one-minute ceiling.
 func newScraper(cfg config) *scraper {
 	return &scraper{
 		client:         &http.Client{Timeout: cfg.fetchTimeout},
 		url:            cfg.scrapeURL,
 		ttl:            cfg.cacheTTL,
 		interval:       cfg.scrapeInterval,
-		initialBackoff: initialBackoff,
-		maxBackoff:     maxBackoff,
+		initialBackoff: 2 * time.Second,
+		maxBackoff:     60 * time.Second,
 	}
+}
+
+// drainBudget is the window in-flight requests get to finish during a
+// graceful shutdown before the exporter reports the drain as failed.
+func drainBudget() time.Duration {
+	return 10 * time.Second
 }
 
 func (s *scraper) Describe(ch chan<- *prometheus.Desc) {
@@ -344,7 +343,7 @@ func realMain(args []string) int {
 		serverErr <- srv.ListenAndServe()
 	}()
 
-	return serve(shutdownCtx, srv, serverErr, drainTimeout)
+	return serve(shutdownCtx, srv, serverErr, drainBudget())
 }
 
 // logLevel maps B19_VERBOSITY to a slog level; unset or unknown is warn.
