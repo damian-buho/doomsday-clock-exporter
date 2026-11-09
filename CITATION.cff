@@ -32,5 +32,5 @@ keywords:
   - monitoring
   - go
   - docker
-version: 0.9.9
-date-released: "2026-11-06"
+version: 0.9.10
+date-released: "2026-11-09"
