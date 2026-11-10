@@ -25,6 +25,7 @@ Exportador de Prometheus que extrae el valor del Reloj del Juicio Final del Bull
 - Recolección con caché y degradación elegante
 - Configuración mediante variables de entorno
 - Comprobación de estado específica del servicio
+- Edad media y mediana de quienes tienen autoridad de lanzamiento
 - Métricas de autoobservabilidad
 
 También hereda las características de B19 / Ubuntu; consulta [Características](FEATURES.md) para ver la lista completa.

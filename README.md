@@ -23,6 +23,7 @@ Prometheus exporter that scrapes the Bulletin of the Atomic Scientists Doomsday 
 - Cached scraping with graceful degradation
 - Environment variable configuration
 - Service-specific healthcheck
+- Average and median age of the people with launch authority
 - Self-observability metrics
 
 It also inherits the features of B19 / Ubuntu — see [Features](docs/FEATURES.md) for the full list.
