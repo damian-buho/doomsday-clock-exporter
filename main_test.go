@@ -884,7 +884,7 @@ func TestRealMainServesUntilSignal(t *testing.T) {
 
 	waitForBody(t, client, base+"/metrics", metricLeadersAverageAge)
 	body := waitForBody(t, client, base+"/metrics", metricSecondsToMidnight)
-	for _, want := range []string{metricLeadersAverageAge, metricSecondsToMidnight, metricScrapeSuccess, metricCacheStale, "90"} {
+	for _, want := range []string{metricLeadersAverageAge, metricLeadersMedianAge, metricSecondsToMidnight, metricScrapeSuccess, metricCacheStale, "90"} {
 		if !strings.Contains(body, want) {
 			t.Errorf("/metrics missing %q", want)
 		}

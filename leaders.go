@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -27,12 +28,22 @@ const leadersDisabled = "off"
 // maxOfficeHops bounds how many office pages are followed to reach a person.
 const maxOfficeHops = 3
 
-const metricLeadersAverageAge = "doomsdayclock_nuclear_leaders_average_age_years"
+const (
+	metricLeadersAverageAge = "doomsdayclock_nuclear_leaders_average_age_years"
+	metricLeadersMedianAge  = "doomsdayclock_nuclear_leaders_median_age_years"
+)
 
-var leadersAgeDesc = prometheus.NewDesc(
-	metricLeadersAverageAge,
-	"Average age in years of the people holding nuclear launch authority, as listed on Wikipedia",
-	nil, nil,
+var (
+	leadersAgeDesc = prometheus.NewDesc(
+		metricLeadersAverageAge,
+		"Average age in years of the people holding nuclear launch authority, as listed on Wikipedia",
+		nil, nil,
+	)
+	leadersMedianAgeDesc = prometheus.NewDesc(
+		metricLeadersMedianAge,
+		"Median age in years of the people holding nuclear launch authority, as listed on Wikipedia",
+		nil, nil,
+	)
 )
 
 var (
@@ -101,6 +112,7 @@ func newLeaders(cfg config) *leaders {
 
 func (l *leaders) Describe(ch chan<- *prometheus.Desc) {
 	ch <- leadersAgeDesc
+	ch <- leadersMedianAgeDesc
 }
 
 func (l *leaders) Collect(ch chan<- prometheus.Metric) {
@@ -110,7 +122,9 @@ func (l *leaders) Collect(ch chan<- prometheus.Metric) {
 	if len(births) == 0 {
 		return
 	}
-	ch <- prometheus.MustNewConstMetric(leadersAgeDesc, prometheus.GaugeValue, averageAge(births, time.Now()))
+	now := time.Now()
+	ch <- prometheus.MustNewConstMetric(leadersAgeDesc, prometheus.GaugeValue, averageAge(births, now))
+	ch <- prometheus.MustNewConstMetric(leadersMedianAgeDesc, prometheus.GaugeValue, medianAge(births, now))
 }
 
 // run refreshes the birth dates every interval until ctx is cancelled.
@@ -123,8 +137,10 @@ func (l *leaders) run(ctx context.Context) {
 		l.mu.Lock()
 		l.births = births
 		l.mu.Unlock()
-		years, days := yearsAndDays(averageAge(births, time.Now()))
-		slog.Info("scrape succeeded", "source", "wikipedia", "leaders", len(births), "average_years", years, "average_days", days)
+		now := time.Now()
+		years, days := yearsAndDays(averageAge(births, now))
+		medianYears, medianDays := yearsAndDays(medianAge(births, now))
+		slog.Info("scrape succeeded", "source", "wikipedia", "leaders", len(births), "average_years", years, "average_days", days, "median_years", medianYears, "median_days", medianDays)
 		return nil
 	})
 }
@@ -313,6 +329,20 @@ func averageAge(births []time.Time, now time.Time) float64 {
 		sum += ageYears(b, now)
 	}
 	return sum / float64(len(births))
+}
+
+// medianAge is the middle ageYears of births at now, averaging the two middle ones for an even count.
+func medianAge(births []time.Time, now time.Time) float64 {
+	ages := make([]float64, len(births))
+	for i, b := range births {
+		ages[i] = ageYears(b, now)
+	}
+	slices.Sort(ages)
+	mid := len(ages) / 2
+	if len(ages)%2 == 1 {
+		return ages[mid]
+	}
+	return (ages[mid-1] + ages[mid]) / 2
 }
 
 // yearsAndDays splits a fractional age into whole years and whole days of a 365.2425-day year.

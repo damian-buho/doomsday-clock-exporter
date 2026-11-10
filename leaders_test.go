@@ -182,6 +182,21 @@ func TestAverageAge(t *testing.T) {
 	}
 }
 
+func TestMedianAge(t *testing.T) {
+	now := date(2020, 6, 1)
+	odd := []time.Time{date(1940, 6, 1), date(1980, 6, 1), date(1970, 6, 1)}
+	if got := medianAge(odd, now); got != 50 {
+		t.Errorf("odd median=%v want=50", got)
+	}
+	even := []time.Time{date(1940, 6, 1), date(2000, 6, 1), date(1980, 6, 1), date(1970, 6, 1)}
+	if got := medianAge(even, now); got != 45 {
+		t.Errorf("even median=%v want=45", got)
+	}
+	if got := medianAge(odd[:1], now); got != 80 {
+		t.Errorf("single median=%v want=80", got)
+	}
+}
+
 func TestYearsAndDays(t *testing.T) {
 	if y, d := yearsAndDays(70.5); y != 70 || d != 182 {
 		t.Errorf("70.5 -> %dy %dd want 70y 182d", y, d)
@@ -293,9 +308,10 @@ func TestLeadersCollect(t *testing.T) {
 	if err != nil {
 		t.Fatalf("gather: %v", err)
 	}
-	got := metricValues(mfs)[metricLeadersAverageAge]
-	if math.Abs(got-60) > 0.01 {
-		t.Errorf("%s=%v want≈60", metricLeadersAverageAge, got)
+	for _, name := range []string{metricLeadersAverageAge, metricLeadersMedianAge} {
+		if got := metricValues(mfs)[name]; math.Abs(got-60) > 0.01 {
+			t.Errorf("%s=%v want≈60", name, got)
+		}
 	}
 }
 
