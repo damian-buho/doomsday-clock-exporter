@@ -12,7 +12,7 @@ Custom Prometheus exporter for the Bulletin of Atomic Scientists’ Doomsday Clo
 
 ## Key facts
 
-- Builder: `b19/go` (source code lives in the project directory — `main.go`, `go.mod`, `go.sum`)
+- Builder: `b19/go` (source code lives in the project directory — `main.go`, `leaders.go`, `go.mod`, `go.sum`; the Dockerfile copies each by name)
 - Final Base: `b19/ubuntu:resolute`
 - Arch: amd64 only
 - **No upstream version pin** — local source, versioned via the project’s own Git
@@ -24,6 +24,8 @@ Custom Prometheus exporter for the Bulletin of Atomic Scientists’ Doomsday Clo
 - `DOOMSDAY_CLOCK_EXPORTER_SCRAPE_INTERVAL=3600` (1h)
 - `DOOMSDAY_CLOCK_EXPORTER_FETCH_TIMEOUT=30` (seconds)
 - `DOOMSDAY_CLOCK_EXPORTER_SCRAPE_URL=https://thebulletin.org/wp-json/wp/v2/pages/10305`
+- `DOOMSDAY_CLOCK_EXPORTER_LEADERS_URL=https://en.wikipedia.org/w/api.php` (`off` disables the nuclear leaders’ age)
+- `DOOMSDAY_CLOCK_EXPORTER_LEADERS_PAGE=List of states with nuclear weapons` (its `== Launch authority ==` table is the entry point)
 
 ## Note
 

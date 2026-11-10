@@ -27,7 +27,7 @@ ARG M6E_VERSION
 ARG TARGETARCH
 
 COPY --chown=${B19_UID}:${B19_GID} .container/compile-go/           /
-COPY --chown=${B19_UID}:${B19_GID} main.go go.mod go.sum            ${B19_HOME}/
+COPY --chown=${B19_UID}:${B19_GID} main.go leaders.go go.mod go.sum ${B19_HOME}/
 
 USER 0
 
@@ -68,6 +68,8 @@ ENV DOOMSDAY_CLOCK_EXPORTER_CACHE_TTL=86400           \
     DOOMSDAY_CLOCK_EXPORTER_SCRAPE_INTERVAL=3600      \
     DOOMSDAY_CLOCK_EXPORTER_FETCH_TIMEOUT=30          \
     DOOMSDAY_CLOCK_EXPORTER_HTTP_PORT=8080            \
+    DOOMSDAY_CLOCK_EXPORTER_LEADERS_URL=https://en.wikipedia.org/w/api.php \
+    DOOMSDAY_CLOCK_EXPORTER_LEADERS_PAGE="List of states with nuclear weapons" \
     DOOMSDAY_CLOCK_EXPORTER_SCRAPE_URL=https://thebulletin.org/wp-json/wp/v2/pages/10305
 
 COPY --chown=${B19_UID}:${B19_GID} .container/base/ /

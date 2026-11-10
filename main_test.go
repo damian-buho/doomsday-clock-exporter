@@ -601,6 +601,8 @@ func TestLoadConfigDefaults(t *testing.T) {
 		"DOOMSDAY_CLOCK_EXPORTER_CACHE_TTL",
 		"DOOMSDAY_CLOCK_EXPORTER_SCRAPE_INTERVAL",
 		"DOOMSDAY_CLOCK_EXPORTER_FETCH_TIMEOUT",
+		"DOOMSDAY_CLOCK_EXPORTER_LEADERS_URL",
+		"DOOMSDAY_CLOCK_EXPORTER_LEADERS_PAGE",
 	} {
 		t.Setenv(key, "")
 	}
@@ -611,6 +613,8 @@ func TestLoadConfigDefaults(t *testing.T) {
 		cacheTTL:       86400 * time.Second,
 		scrapeInterval: 3600 * time.Second,
 		fetchTimeout:   30 * time.Second,
+		leadersURL:     "https://en.wikipedia.org/w/api.php",
+		leadersPage:    "List of states with nuclear weapons",
 	}
 	if got := loadConfig(); got != want {
 		t.Errorf("config=%+v want=%+v", got, want)
@@ -623,6 +627,8 @@ func TestLoadConfigFromEnv(t *testing.T) {
 	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_CACHE_TTL", "5")
 	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_SCRAPE_INTERVAL", "7")
 	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_FETCH_TIMEOUT", "11")
+	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_LEADERS_URL", leadersDisabled)
+	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_LEADERS_PAGE", testListPage)
 
 	want := config{
 		port:           "9999",
@@ -630,6 +636,8 @@ func TestLoadConfigFromEnv(t *testing.T) {
 		cacheTTL:       5 * time.Second,
 		scrapeInterval: 7 * time.Second,
 		fetchTimeout:   11 * time.Second,
+		leadersURL:     leadersDisabled,
+		leadersPage:    testListPage,
 	}
 	if got := loadConfig(); got != want {
 		t.Errorf("config=%+v want=%+v", got, want)
@@ -850,6 +858,7 @@ func TestRealMainServesUntilSignal(t *testing.T) {
 		json.NewEncoder(w).Encode(page)
 	}))
 	defer bulletin.Close()
+	wiki := fakeWiki(t, wikiFixture())
 
 	port := freePort(t)
 	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_HTTP_PORT", port)
@@ -857,6 +866,8 @@ func TestRealMainServesUntilSignal(t *testing.T) {
 	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_CACHE_TTL", "60")
 	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_SCRAPE_INTERVAL", "3600")
 	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_FETCH_TIMEOUT", "5")
+	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_LEADERS_URL", wiki.URL)
+	t.Setenv("DOOMSDAY_CLOCK_EXPORTER_LEADERS_PAGE", testListPage)
 
 	restoreDefaultLogger := slog.Default()
 	t.Cleanup(func() { slog.SetDefault(restoreDefaultLogger) })
@@ -871,8 +882,9 @@ func TestRealMainServesUntilSignal(t *testing.T) {
 		t.Errorf("/health body=%q want=ok", body)
 	}
 
+	waitForBody(t, client, base+"/metrics", metricLeadersAverageAge)
 	body := waitForBody(t, client, base+"/metrics", metricSecondsToMidnight)
-	for _, want := range []string{metricSecondsToMidnight, metricScrapeSuccess, metricCacheStale, "90"} {
+	for _, want := range []string{metricLeadersAverageAge, metricSecondsToMidnight, metricScrapeSuccess, metricCacheStale, "90"} {
 		if !strings.Contains(body, want) {
 			t.Errorf("/metrics missing %q", want)
 		}

@@ -23,10 +23,20 @@ SPDX-License-Identifier: MIT
 - Upstream fetch timeout: `DOOMSDAY_CLOCK_EXPORTER_FETCH_TIMEOUT` (default `30` seconds).
 - Scrape interval: `DOOMSDAY_CLOCK_EXPORTER_SCRAPE_INTERVAL` (default `3600` seconds).
 - Cache TTL: `DOOMSDAY_CLOCK_EXPORTER_CACHE_TTL` (default `86400` seconds).
+- Wikipedia API for the nuclear leaders’ age: `DOOMSDAY_CLOCK_EXPORTER_LEADERS_URL` (default `https://en.wikipedia.org/w/api.php`, `off` disables).
+- Wikipedia page holding the launch authority table: `DOOMSDAY_CLOCK_EXPORTER_LEADERS_PAGE` (default `List of states with nuclear weapons`).
 
 ### Service-specific healthcheck
 
 - Health endpoint (`/health`) responsiveness verification.
+
+### Average age of the people with launch authority
+
+- Exports `doomsdayclock_nuclear_leaders_average_age_years`: the average age of whoever can order a nuclear launch in each nuclear-armed state.
+- No list of leaders or states ships with the image: each scrape reads the launch authority table on Wikipedia, then each office’s current incumbent, then that person’s birth date.
+- A change of leader shows up at the next scrape, with no rebuild or release.
+- Ages count whole years plus the elapsed share of the current year, so the value grows between scrapes.
+- Set `DOOMSDAY_CLOCK_EXPORTER_LEADERS_URL=off` to turn it off.
 
 ### Self-observability metrics
 

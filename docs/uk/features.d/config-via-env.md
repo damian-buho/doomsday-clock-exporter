@@ -13,5 +13,7 @@ SPDX-License-Identifier: MIT
 - Таймаут звернення до upstream: `DOOMSDAY_CLOCK_EXPORTER_FETCH_TIMEOUT` (типово `30` секунд).
 - Інтервал збору: `DOOMSDAY_CLOCK_EXPORTER_SCRAPE_INTERVAL` (типово `3600` секунд).
 - TTL кешу: `DOOMSDAY_CLOCK_EXPORTER_CACHE_TTL` (типово `86400` секунд).
+- API Вікіпедії для віку ядерних лідерів: `DOOMSDAY_CLOCK_EXPORTER_LEADERS_URL` (типово `https://en.wikipedia.org/w/api.php`, `off` вимикає).
+- Сторінка Вікіпедії з таблицею повноважень на пуск: `DOOMSDAY_CLOCK_EXPORTER_LEADERS_PAGE` (типово `List of states with nuclear weapons`).
 
 <!-- textlint-enable -->

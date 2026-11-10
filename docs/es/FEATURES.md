@@ -25,10 +25,20 @@ SPDX-License-Identifier: MIT
 - Tiempo de espera de la obtención upstream: `DOOMSDAY_CLOCK_EXPORTER_FETCH_TIMEOUT` (por defecto `30` segundos).
 - Intervalo de recolección: `DOOMSDAY_CLOCK_EXPORTER_SCRAPE_INTERVAL` (por defecto `3600` segundos).
 - TTL de la caché: `DOOMSDAY_CLOCK_EXPORTER_CACHE_TTL` (por defecto `86400` segundos).
+- API de Wikipedia para la edad de los líderes nucleares: `DOOMSDAY_CLOCK_EXPORTER_LEADERS_URL` (por defecto `https://en.wikipedia.org/w/api.php`, `off` la desactiva).
+- Página de Wikipedia con la tabla de autoridad de lanzamiento: `DOOMSDAY_CLOCK_EXPORTER_LEADERS_PAGE` (por defecto `List of states with nuclear weapons`).
 
 ### Comprobación de estado específica del servicio
 
 - Verificación de la capacidad de respuesta del endpoint de estado (`/health`).
+
+### Edad media de quienes tienen autoridad de lanzamiento
+
+- Exporta `doomsdayclock_nuclear_leaders_average_age_years`: la edad media de quien puede ordenar un lanzamiento nuclear en cada Estado con armas nucleares.
+- La imagen no incluye ninguna lista de líderes ni de Estados: cada recolección lee en Wikipedia la tabla de autoridad de lanzamiento, luego el titular actual de cada cargo y, por último, su fecha de nacimiento.
+- Un cambio de líder aparece en la siguiente recolección, sin recompilar ni publicar una versión.
+- Las edades cuentan los años completos más la parte transcurrida del año en curso, así que el valor crece entre recolecciones.
+- `DOOMSDAY_CLOCK_EXPORTER_LEADERS_URL=off` la desactiva.
 
 ### Métricas de autoobservabilidad
 

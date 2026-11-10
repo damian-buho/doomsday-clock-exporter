@@ -144,10 +144,21 @@ func (s *scraper) Collect(ch chan<- prometheus.Metric) {
 	}
 }
 
-// run starts the background scrape loop. Fetches immediately, then at
-// s.interval. On failure, applies exponential backoff up to maxBackoff.
-// It returns when ctx is cancelled so the loop unwinds during shutdown.
+// run starts the background Bulletin scrape loop until ctx is cancelled.
 func (s *scraper) run(ctx context.Context) {
+	retryLoop(ctx, "bulletin", s.interval, s.initialBackoff, s.maxBackoff, func(ctx context.Context) error {
+		value, err := s.fetch(ctx)
+		if err != nil {
+			return err
+		}
+		s.cache.store(value)
+		slog.Info("scrape succeeded", "seconds", value)
+		return nil
+	})
+}
+
+// retryLoop runs step now and every interval, backing off exponentially on failure, until ctx is cancelled.
+func retryLoop(ctx context.Context, source string, interval, initialBackoff, maxBackoff time.Duration, step func(context.Context) error) {
 	// wait blocks for d unless ctx is cancelled first; it returns false on
 	// cancellation so the loop can exit instead of sleeping through shutdown.
 	wait := func(d time.Duration) bool {
@@ -164,24 +175,21 @@ func (s *scraper) run(ctx context.Context) {
 	backoff := time.Duration(0)
 
 	for {
-		value, err := s.fetch(ctx)
-		if err != nil {
+		if err := step(ctx); err != nil {
 			// First failure waits initialBackoff, then doubles up to maxBackoff.
-			backoff = min(max(backoff*2, s.initialBackoff), s.maxBackoff)
+			backoff = min(max(backoff*2, initialBackoff), maxBackoff)
 
-			slog.Error("scrape failed", "error", err, "retry_in", backoff)
+			slog.Error("scrape failed", "source", source, "error", err, "retry_in", backoff)
 			if !wait(backoff) {
-				slog.Info("scraper stopping", "reason", ctx.Err())
+				slog.Info("scraper stopping", "source", source, "reason", ctx.Err())
 				return
 			}
 			continue
 		}
 
-		s.cache.store(value)
-		slog.Info("scrape succeeded", "seconds", value)
 		backoff = 0
-		if !wait(s.interval) {
-			slog.Info("scraper stopping", "reason", ctx.Err())
+		if !wait(interval) {
+			slog.Info("scraper stopping", "source", source, "reason", ctx.Err())
 			return
 		}
 	}
@@ -234,6 +242,8 @@ type config struct {
 	cacheTTL       time.Duration
 	scrapeInterval time.Duration
 	fetchTimeout   time.Duration
+	leadersURL     string
+	leadersPage    string
 }
 
 // loadConfig reads the DOOMSDAY_CLOCK_EXPORTER_* environment, defaulting anything unset.
@@ -245,6 +255,8 @@ func loadConfig() config {
 		cacheTTL:       time.Duration(envIntOr("DOOMSDAY_CLOCK_EXPORTER_CACHE_TTL", 86400)) * time.Second,
 		scrapeInterval: time.Duration(envIntOr("DOOMSDAY_CLOCK_EXPORTER_SCRAPE_INTERVAL", 3600)) * time.Second,
 		fetchTimeout:   time.Duration(envIntOr("DOOMSDAY_CLOCK_EXPORTER_FETCH_TIMEOUT", 30)) * time.Second,
+		leadersURL:     envOr("DOOMSDAY_CLOCK_EXPORTER_LEADERS_URL", "https://en.wikipedia.org/w/api.php"),
+		leadersPage:    envOr("DOOMSDAY_CLOCK_EXPORTER_LEADERS_PAGE", "List of states with nuclear weapons"),
 	}
 }
 
@@ -319,6 +331,14 @@ func realMain(args []string) int {
 	// metrics (go_*, process_*) served by promhttp.Handler below.
 	prometheus.MustRegister(s)
 	go s.run(shutdownCtx)
+
+	if cfg.leadersURL == leadersDisabled {
+		slog.Info("nuclear leaders source disabled", "url", cfg.leadersURL)
+	} else {
+		l := newLeaders(cfg)
+		prometheus.MustRegister(l)
+		go l.run(shutdownCtx)
+	}
 
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
