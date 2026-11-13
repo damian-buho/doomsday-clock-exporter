@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Damián Búho <damian.buho@proton.me>
 //
 // SPDX-License-Identifier: MIT
+//nolint:goconst
 
 package main
 
@@ -19,6 +20,8 @@ import (
 
 // testListPage is the fixture title of the page holding the launch authority table.
 const testListPage = "Nukes"
+
+const presidentOfTheUnitedStates = "President of the United States"
 
 // launchTableFixture mirrors the shape of the live Launch authority table, refs and multi-line rows included.
 const launchTableFixture = `== Launch authority ==
@@ -52,7 +55,7 @@ Some prose.<ref name="UCS" />
 func wikiFixture() map[string]string {
 	return map[string]string{
 		testListPage:                                launchTableFixture,
-		"President of the United States":            "{{Infobox official post\n| incumbent = [[Donald Trump]]\n}}",
+		presidentOfTheUnitedStates:                  "{{Infobox official post\n| incumbent = [[Donald Trump]]\n}}",
 		"National Command Authority (Pakistan)":     "{{Infobox government agency\n| chief1_name = [[Lieutenant general (Pakistan)|Lt-Gen.]] [[Yusuf Jamal]]\n}}\nWith the [[Prime Minister of Pakistan]] as its chairperson, the NCA acts.",
 		"Prime Minister of Pakistan":                "| incumbent = [[Shehbaz Sharif]]",
 		"President of the State Affairs Commission": "| incumbent = [[Kim Jong Un]] ''(since 2016)''",
@@ -94,10 +97,28 @@ func TestLaunchAuthorities(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	want := []authority{
-		{"United States", "President of the United States"},
+		{"United States", presidentOfTheUnitedStates},
 		{"Pakistan", "National Command Authority (Pakistan)"},
 		{"North Korea", "President of the State Affairs Commission"},
 	}
+	if len(got) != len(want) {
+		t.Fatalf("got %d rows %+v want %d", len(got), got, len(want))
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Errorf("row %d=%+v want=%+v", i, got[i], want[i])
+		}
+	}
+}
+
+// TestLaunchAuthoritiesCompactRow reads a row whose country and office sit on one line.
+func TestLaunchAuthoritiesCompactRow(t *testing.T) {
+	text := "== Launch authority ==\n{|\n|-\n| scope=\"row\"| [[United States]] || [[` + presidentOfTheUnitedStates + `]]\n|}"
+	got, err := launchAuthorities(text)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	want := []authority{{"United States", presidentOfTheUnitedStates}}
 	if len(got) != len(want) {
 		t.Fatalf("got %d rows %+v want %d", len(got), got, len(want))
 	}
@@ -132,6 +153,7 @@ func TestBirthDate(t *testing.T) {
 		"zero padded": {"| birth_date = {{Birth date and age|df=yes|1953|06|15}}", date(1953, 6, 15)},
 		"bda":         {"| birth_date = {{bda|1977|12|21}}", date(1977, 12, 21)},
 		"range":       {wikiFixture()["Kim Jong Un"], date(1983, 1, 8)},
+		"half range":  {"| birth_date = {{age|1984|1|9}}–{{age|1982|1|8}}", date(1983, 1, 8)},
 	} {
 		got, err := birthDate(tc.text)
 		if err != nil {
@@ -158,14 +180,17 @@ func TestBirthDateRejectsMissingDate(t *testing.T) {
 
 func TestAgeYearsAroundBirthday(t *testing.T) {
 	birth := date(1980, 3, 10)
-	if got := ageYears(birth, date(2020, 3, 10)); got != 40 {
+	// The age counts whole years plus the elapsed fraction of the year since the last birthday.
+	if got := ageYears(birth, date(2020, 3, 10)); math.Abs(got-40) > 1e-9 {
 		t.Errorf("on birthday=%v want=40", got)
 	}
-	if got := ageYears(birth, date(2020, 3, 9)); got >= 40 || got < 39.99 {
-		t.Errorf("day before=%v want just under 40", got)
+	before := 39.0 + 365.0/366.0
+	if got := ageYears(birth, date(2020, 3, 9)); math.Abs(got-before) > 1e-9 {
+		t.Errorf("day before=%v want=%v", got, before)
 	}
-	if got := ageYears(birth, date(2020, 3, 11)); got <= 40 || got > 40.01 {
-		t.Errorf("day after=%v want just over 40", got)
+	after := 40.0 + 1.0/365.0
+	if got := ageYears(birth, date(2020, 3, 11)); math.Abs(got-after) > 1e-9 {
+		t.Errorf("day after=%v want=%v", got, after)
 	}
 }
 
@@ -265,7 +290,7 @@ func TestLeadersFetchFailsWhenAnyLinkBreaks(t *testing.T) {
 		t.Error("person without birth_date: want error")
 	}
 	pages = wikiFixture()
-	pages["President of the United States"] = "vacant"
+	pages[presidentOfTheUnitedStates] = "vacant"
 	if _, err := testLeaders(fakeWiki(t, pages)).fetch(context.Background()); err == nil {
 		t.Error("office without incumbent or chair: want error")
 	}
@@ -343,5 +368,8 @@ func TestNewLeaders(t *testing.T) {
 	l := newLeaders(cfg)
 	if l.api != cfg.leadersURL || l.page != cfg.leadersPage || l.interval != cfg.scrapeInterval || l.client.Timeout != cfg.fetchTimeout {
 		t.Errorf("leaders=%+v does not mirror config %+v", l, cfg)
+	}
+	if l.initialBackoff != 2*time.Second || l.maxBackoff != 60*time.Second {
+		t.Errorf("backoff bounds=(%v,%v) want=(2s,60s)", l.initialBackoff, l.maxBackoff)
 	}
 }
