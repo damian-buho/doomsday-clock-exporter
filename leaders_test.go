@@ -113,7 +113,7 @@ func TestLaunchAuthorities(t *testing.T) {
 
 // TestLaunchAuthoritiesCompactRow reads a row whose country and office sit on one line.
 func TestLaunchAuthoritiesCompactRow(t *testing.T) {
-	text := "== Launch authority ==\n{|\n|-\n| scope=\"row\"| [[United States]] || [[` + presidentOfTheUnitedStates + `]]\n|}"
+	text := "== Launch authority ==\n{|\n|-\n| scope=\"row\"| [[United States]] || [[" + presidentOfTheUnitedStates + "]]\n|}"
 	got, err := launchAuthorities(text)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
